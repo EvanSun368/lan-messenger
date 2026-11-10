@@ -1,0 +1,41 @@
+name: Windows portable
+on:
+  push:
+    branches: ['build/windows-portable-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - name: Install build dependencies
+        shell: pwsh
+        run: |
+          python -m venv .venv-build
+          .venv-build\Scripts\python.exe -m pip install -e . pyinstaller==6.16.0
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Unit and offscreen GUI tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: .venv-build\Scripts\python.exe -m unittest discover -s tests -v
+      - name: Build executable
+        run: .venv-build\Scripts\python.exe -m PyInstaller --noconfirm --clean --windowed --onedir --name LanLink launch.py
+      - name: Packaged GUI startup and portable ZIP
+        shell: pwsh
+        run: ./packaging/finish-portable.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LanLink-0.4.0-windows-x64-portable
+          path: |
+            dist/*.zip
+            dist/*.sha256
+            dist/windows-startup-smoke.png
+          if-no-files-found: error
+          retention-days: 14
