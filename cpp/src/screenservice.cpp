@@ -1,6 +1,7 @@
 #include "screenservice.h"
 #include "node.h"
 #include <QTcpSocket>
+#include <QNetworkProxy>
 #include <QTimer>
 #include <QUuid>
 #include <QJsonDocument>
@@ -32,7 +33,7 @@ QStringList ScreenService::startMany(QStringList peerIds){
  QHash<QString,QJsonObject> peers;for(auto v:node->peers()){auto p=v.toObject();peers[p["id"].toString()]=p;}
  for(auto id:peerIds){auto p=peers.value(id);if(p.isEmpty()||!Node::privateAddress(QHostAddress(p["host"].toString()))){emit event("screen_status",{{"message",QStringLiteral("接收人地址不可用")}});return {};}}
  QStringList result;
- for(auto peer:peerIds){auto s=new Session;s->socket=new QTcpSocket(this);s->peer=peer;s->outgoing=true;QString id=QUuid::createUuid().toString(QUuid::Id128);attach(id,s,35000);result<<id;
+ for(auto peer:peerIds){auto s=new Session;s->socket=new QTcpSocket(this);s->socket->setProxy(QNetworkProxy::NoProxy);s->peer=peer;s->outgoing=true;QString id=QUuid::createUuid().toString(QUuid::Id128);attach(id,s,35000);result<<id;
  connect(s->socket,&QTcpSocket::connected,this,[this,id]{if(!sessions.contains(id))return;Node::writeFrame(sessions[id]->socket,{{"type","screen_offer"},{"sender",node->hello()},{"session",id}});});
  auto p=peers[peer];s->socket->connectToHost(p["host"].toString(),quint16(p["port"].toInt()));}
  return result;

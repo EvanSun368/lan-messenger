@@ -13,6 +13,7 @@
 #include <QtEndian>
 #include <memory>
 #include <QFutureWatcher>
+#include <QNetworkProxy>
 #include <QtConcurrentRun>
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -67,7 +68,7 @@ void FileTransfer::serveFetch(QTcpSocket*s,QJsonObject r,QString host,QByteArray
 void FileTransfer::acceptFile(QString id,QString dir){
  if(m_active.value(id)||m_verifying.contains(id)||!m_incoming.contains(id))return;auto item=m_incoming[id].toObject();QFileInfo di(dir);QString name=item["name"].toString();if(!di.isDir()||!safeName(name)){emit error("保存目录无效");return;}dir=di.canonicalFilePath();QString dest=dir+"/"+name,part=dir+"/.lanlink-"+id+".part";if(QFileInfo::exists(dest)||QFileInfo(dest).isSymLink()||QFileInfo(part).isSymLink()){emit error("目标已存在或部分文件不安全");return;}
  auto file=std::make_shared<QFile>(part);qint64 total=qint64(item["size"].toDouble());if(!file->open(QIODevice::ReadWrite)||file->size()>total){emit error("无法打开部分文件");return;}file->seek(file->size());auto p=peer(item["sender"].toObject()["id"].toString());if(p.isEmpty())p=item["peer"].toObject();QHostAddress host(p["host"].toString());if(!Node::privateAddress(host)){emit error("仅限可信局域网地址");return;}
- auto s=new QTcpSocket(this);s->setReadBufferSize(1048580);m_active[id]=s;auto timer=new QTimer(s);timer->setSingleShot(true);timer->setInterval(30000);timer->start();auto header=std::make_shared<QByteArray>();auto accepted=std::make_shared<bool>(false);auto done=std::make_shared<bool>(false);
+ auto s=new QTcpSocket(this);s->setProxy(QNetworkProxy::NoProxy);s->setReadBufferSize(1048580);m_active[id]=s;auto timer=new QTimer(s);timer->setSingleShot(true);timer->setInterval(30000);timer->start();auto header=std::make_shared<QByteArray>();auto accepted=std::make_shared<bool>(false);auto done=std::make_shared<bool>(false);
  connect(s,&QTcpSocket::connected,s,[s,id,file](){Node::writeFrame(s,{{"type","fetch"},{"id",id},{"offset",double(file->pos())}});});
  auto finish=[this,s,file,item,id,part,dest,total,done](){if(*done)return;*done=true;file->flush();file->close();m_verifying.insert(id);emit progress(id,total,total,"校验中");QPointer<QTcpSocket> safe(s);hashAsync(part,[this,safe,item,id,part,dest,total](QByteArray hash){m_verifying.remove(id);if(QString::fromLatin1(hash)!=item["sha256"].toString()){QFile::remove(part);emit error("SHA256 校验失败，请重试");emit progress(id,0,total,"校验失败");if(safe)safe->abort();return;}if(!publishNoReplace(part,dest)){emit error("无法安全发布文件：目标已存在或文件系统不支持硬链接，部分文件保留");emit progress(id,total,total,"发布失败，可重试");if(safe)safe->abort();return;}QFile::remove(part);m_incoming.remove(id);persist();notifyRelease(item);emit progress(id,total,total,"完成");emit completed(id,dest);if(safe)safe->disconnectFromHost();});};
  connect(s,&QTcpSocket::readyRead,s,[this,s,file,header,accepted,done,timer,id,total,finish](){timer->start();if(!*accepted){header->append(s->readAll());if(header->size()<4)return;quint32 n=qFromBigEndian<quint32>(reinterpret_cast<const uchar*>(header->constData()));if(n>1048576){s->abort();return;}if(header->size()<qsizetype(n+4))return;auto r=QJsonDocument::fromJson(header->mid(4,n)).object();if(!r["ok"].toBool()){emit error(r["error"].toString("文件邀请不可用"));s->abort();return;}auto remainder=header->mid(n+4);header->clear();*accepted=true;if(remainder.size()>total-file->pos()||file->write(remainder)!=remainder.size()){s->abort();return;}}
