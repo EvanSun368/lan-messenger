@@ -18,11 +18,21 @@ class CoreTest(unittest.TestCase):
  def test_public_rejected(self):
   with tempfile.TemporaryDirectory() as d:
    a=Node('A',d,lambda *x:None)
-   with self.assertRaises(ValueError):a.add_peer('8.8.8.8',1234)
+   try:
+    with self.assertRaises(ValueError):a.add_peer('8.8.8.8',1234)
+   finally:a.stop()
  def test_history_latest_and_bad_id(self):
   with tempfile.TemporaryDirectory() as d:
    a=Node('A',d,lambda *x:None)
-   for i in range(5):a.save(str(i),'p','in',str(i))
-   self.assertEqual([v['text'] for v in a.history('p',2)],['3','4'])
-   with self.assertRaises(ValueError):a.accept_file('../../bad',d)
+   try:
+    for i in range(5):a.save(str(i),'p','in',str(i))
+    self.assertEqual([v['text'] for v in a.history('p',2)],['3','4'])
+    with self.assertRaises(ValueError):a.accept_file('../../bad',d)
+   finally:a.stop()
+ def test_stop_releases_sqlite_and_is_idempotent(self):
+  import sqlite3
+  with tempfile.TemporaryDirectory() as d:
+   n=Node('A',d,lambda *x:None);n.stop();n.stop()
+   with self.assertRaises(sqlite3.ProgrammingError):n.db.execute('SELECT 1')
+   pathlib.Path(d,'history.sqlite').unlink()
 if __name__=='__main__':unittest.main()
