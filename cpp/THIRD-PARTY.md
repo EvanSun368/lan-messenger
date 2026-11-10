@@ -1,0 +1,3 @@
+# Third-party notices
+This C++ application dynamically links Qt 6.8.3 under its applicable LGPL/GPL or commercial licenses. Qt is Copyright (C) The Qt Company Ltd. and other contributors. License texts accompany this build. Source: https://download.qt.io/archive/qt/6.8/6.8.3/submodules/ . Build scripts are in the repository's cpp directory; replacement compatible Qt DLLs may be used, and reverse engineering for debugging modifications to LGPL components is not prohibited.
+Application license has not yet been selected by its owner; do not assume public redistribution permission. This is an unsigned development preview, not affiliated with Feige. Review applicable dependency terms before distributing publicly.
