@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
     QApplication app(argc, argv);
     QCoreApplication::setOrganizationName("LanLink");
     QCoreApplication::setApplicationName("LanLinkCpp");
-    QCoreApplication::setApplicationVersion("0.5.0");
+    QCoreApplication::setApplicationVersion("0.5.1");
     QCommandLineParser p;
     p.addHelpOption();
     p.addVersionOption();

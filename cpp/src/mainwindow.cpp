@@ -1,4 +1,6 @@
 #include "mainwindow.h"
+#include "chatnotifications.h"
+#include "emojipicker.h"
 #include "filetransfer.h"
 #include "linkpreview.h"
 #include "node.h"
@@ -31,7 +33,7 @@ class TitleBar : public QWidget {
         label = plainLabel(text);
         label->setStyleSheet("color:white;font-weight:600");
         l->addWidget(label, 1);
-        for (auto s : {QString("−"), QString("×")}) {
+        for (auto s : {QString("−"), QString("□"), QString("×")}) {
             auto *b = new QPushButton(s);
             b->setFixedSize(28, 25);
             b->setObjectName("titleButton");
@@ -39,7 +41,9 @@ class TitleBar : public QWidget {
             connect(b, &QPushButton::clicked, this, [this, s] {
                 if (s == "×")
                     m_window->close();
-                else
+                else if (s == "□") {
+                    if (m_window->isMaximized()) m_window->showNormal(); else m_window->showMaximized();
+                } else
                     m_window->showMinimized();
             });
         }
@@ -124,12 +128,25 @@ MainWindow::MainWindow(QString storage, quint16 port, bool demo, QWidget *parent
             .toString(),
         storage, this);
     connect(m_node, &Node::event, this, &MainWindow::event);
+    m_enterSends = m_settings.value("enterSends", false).toBool();
     m_chatFont = QFont(m_settings.value("fontFamily", "Microsoft YaHei UI").toString(),
                        qBound(8, m_settings.value("fontSize", 11).toInt(), 24));
     buildUi();
     buildFiles();
     buildSharing();
     setupServices();
+    m_notifications = new ChatNotifications(this, !m_demo);
+    m_notifications->setEnabled(m_settings.value("notifications", true).toBool());
+    connect(m_notifications, &ChatNotifications::unreadChanged, this, [this] {
+        refreshContacts();
+        setWindowTitle(QString("LanLink C++ 0.5.1%1").arg(m_notifications->totalUnread() ? QString(" · %1 条未读").arg(m_notifications->totalUnread()) : QString()));
+    });
+    connect(m_notifications, &ChatNotifications::activateConversation, this, [this](QString id) {
+        m_search->clear(); m_tabs->setCurrentIndex(0);
+        for(int n=0;n<m_contacts->count();++n) if(m_contacts->item(n)->data(Qt::UserRole).toString()==id) {
+            m_contacts->setCurrentRow(n); openConversation(); break;
+        }
+    });
     for (auto v : m_node->peers()) {
         auto p = v.toObject();
         m_peers[p["id"].toString()] = p;
@@ -168,6 +185,7 @@ MainWindow::~MainWindow() {
 void MainWindow::buildUi() {
     setWindowTitle("LanLink · C++ Qt 开发预览");
     setWindowFlag(Qt::FramelessWindowHint);
+    setFont(QFont("Microsoft YaHei UI", 10));
     resize(362, 800);
     setMinimumSize(340, 600);
     setStyleSheet(
@@ -184,6 +202,8 @@ void MainWindow::buildUi() {
         "QLineEdit{padding:6px;border:1px solid #d2dee7;background:#fff;} "
         "QTextBrowser{border:0;background:white;} QPlainTextEdit{border:0;background:white;} "
         "QPushButton#primary{background:#e9f6ff;border:1px solid #6aa9d2;} "
+        "QToolButton{border:0;background:transparent;padding:5px 8px;color:#506478;} "
+        "QToolButton:hover{background:#e6f3ff;} QSplitter::handle{background:#e6ebef;} "
         "QStatusBar{background:#2196ed;color:white;font-size:10px;}");
     auto *root = new QWidget;
     setCentralWidget(root);
@@ -296,22 +316,37 @@ void MainWindow::buildUi() {
     m_messages->setOpenExternalLinks(false);
     m_messages->setFont(m_chatFont);
     connect(m_messages, &QTextBrowser::anchorClicked, this, &MainWindow::openLink);
-    cl->addWidget(m_messages, 1);
+    m_messages->setContextMenuPolicy(Qt::DefaultContextMenu);
+    m_messages->document()->setDocumentMargin(16);
+    auto *verticalSplit = new QSplitter(Qt::Vertical);
+    verticalSplit->setObjectName("composeSplitter");
+    verticalSplit->setChildrenCollapsible(false);
+    cl->addWidget(verticalSplit, 1);
+    verticalSplit->addWidget(m_messages);
     auto *compose = new QWidget;
-    compose->setStyleSheet("border-top:1px solid #e0e5eb;");
+    compose->setObjectName("composePanel");
+    compose->setStyleSheet("QWidget#composePanel{border-top:1px solid #e0e5eb;}");
     auto *cpl = new QVBoxLayout(compose);
     cpl->setContentsMargins(7, 5, 7, 6);
     auto *toolbar = new QHBoxLayout;
-    for (auto action : QList<QPair<QString, std::function<void()>>>{{"☺", [this] { chooseEmoji(); }},
-                                                                    {"截图", [this] { captureScreenshot(); }},
-                                                                    {"字体", [this] { chooseFont(); }},
-                                                                    {"文件", [this] { sendFile(); }},
-                                                                    {"投屏", [this] { openScreen(); }},
-                                                                    {"资料", [this] { viewProfile(); }}}) {
-        auto *b = new QPushButton(action.first);
-        connect(b, &QPushButton::clicked, this, action.second);
+    for (auto action : QList<QPair<QString, std::function<void()>>>{{"表情", [this] { chooseEmoji(); }},
+            {"截图", [this] { captureScreenshot(); }}, {"图片", [this] { chooseImage(); }},
+            {"文件", [this] { sendFile(); }}, {"投屏", [this] { openScreen(); }}}) {
+        auto *b = new QToolButton;
+        b->setText(action.first);
+        b->setToolTip(action.first);
+        connect(b, &QToolButton::clicked, this, action.second);
         toolbar->addWidget(b);
     }
+    auto *more = new QToolButton;
+    more->setText("更多");
+    more->setPopupMode(QToolButton::InstantPopup);
+    auto *moreMenu = new QMenu(more);
+    moreMenu->addAction("聊天字体…", this, &MainWindow::chooseFont);
+    moreMenu->addAction("联系人资料…", this, &MainWindow::viewProfile);
+    moreMenu->addAction("文件传输记录", this, [this] {m_transfers->show(); m_transfers->raise();});
+    more->setMenu(moreMenu);
+    toolbar->addWidget(more);
     toolbar->addStretch();
     auto *history = new QPushButton("聊天记录");
     connect(history, &QPushButton::clicked, this,
@@ -323,25 +358,58 @@ void MainWindow::buildUi() {
     m_editor->setPlaceholderText("输入消息…");
     m_editor->setFont(m_chatFont);
     m_editor->setMinimumHeight(64);
-    m_editor->setMaximumHeight(90);
+    m_editor->installEventFilter(this);
+    m_chat->installEventFilter(this);
     cpl->addWidget(m_editor);
     auto *bottom = new QHBoxLayout;
-    bottom->addWidget(plainLabel("Ctrl + Enter 发送"));
+    m_sendHint = plainLabel(m_enterSends ? "Enter 发送 · Shift+Enter 换行" : "Ctrl+Enter 发送 · Enter 换行");
+    m_sendHint->setStyleSheet("color:#8a96a3;font-size:11px;border:0;");
+    bottom->addWidget(m_sendHint);
     bottom->addStretch();
     auto *close = new QPushButton("关闭");
     connect(close, &QPushButton::clicked, m_chat, &QDialog::hide);
     bottom->addWidget(close);
     auto *send = new QPushButton("发送");
+    send->setMinimumWidth(86);
     send->setObjectName("primary");
     connect(send, &QPushButton::clicked, this, &MainWindow::sendMessage);
     bottom->addWidget(send);
+    auto *sendOptions = new QToolButton;
+    sendOptions->setText("▾");
+    sendOptions->setObjectName("sendOptions");
+    sendOptions->setPopupMode(QToolButton::InstantPopup);
+    auto *sendMenu = new QMenu(sendOptions);
+    auto *sendGroup = new QActionGroup(sendMenu);
+    sendGroup->setExclusive(true);
+    for (int mode = 0; mode < 2; ++mode) {
+        auto *a = sendMenu->addAction(mode ? "Enter 发送" : "Ctrl+Enter 发送");
+        a->setCheckable(true); a->setChecked(m_enterSends == bool(mode)); sendGroup->addAction(a);
+        connect(a, &QAction::triggered, this, [this, mode] {
+            m_enterSends = mode; m_settings.setValue("enterSends", m_enterSends);
+            m_sendHint->setText(m_enterSends ? "Enter 发送 · Shift+Enter 换行" : "Ctrl+Enter 发送 · Enter 换行");
+        });
+    }
+    sendOptions->setMenu(sendMenu); bottom->addWidget(sendOptions);
     bottom->addWidget(new QSizeGrip(m_chat));
     cpl->addLayout(bottom);
-    cl->addWidget(compose);
+    verticalSplit->addWidget(compose);
+    verticalSplit->setSizes({510, 200});
+    verticalSplit->setStretchFactor(0, 3);
+    verticalSplit->setStretchFactor(1, 1);
     split->addWidget(conversation);
     m_historyPanel = new QWidget;
     auto *hl = new QVBoxLayout(m_historyPanel);
-    hl->addWidget(plainLabel("历史消息记录"));
+    hl->setContentsMargins(10, 10, 10, 10);
+    auto *historyHeader = new QHBoxLayout;
+    historyHeader->addWidget(plainLabel("聊天记录"), 1);
+    auto *historyClose = new QToolButton; historyClose->setText("×");
+    historyClose->setToolTip("关闭记录侧栏");
+    connect(historyClose, &QToolButton::clicked, m_historyPanel, &QWidget::hide);
+    historyHeader->addWidget(historyClose); hl->addLayout(historyHeader);
+    m_historySearch = new QLineEdit; m_historySearch->setObjectName("historySearch");
+    m_historySearch->setPlaceholderText("搜索当前会话记录");
+    connect(m_historySearch, &QLineEdit::textChanged, this, &MainWindow::updateHistorySearch);
+    hl->addWidget(m_historySearch);
     m_history = new QTextBrowser;
     hl->addWidget(m_history);
     m_historyPanel->setMinimumWidth(220);
@@ -349,10 +417,7 @@ void MainWindow::buildUi() {
     split->addWidget(m_historyPanel);
     m_historyPanel->hide();
     split->setSizes({720, 280});
-    auto *sendAction = new QAction(m_chat);
-    sendAction->setShortcut(QKeySequence("Ctrl+Return"));
-    connect(sendAction, &QAction::triggered, this, &MainWindow::sendMessage);
-    m_chat->addAction(sendAction);
+
 }
 void MainWindow::refreshContacts() {
     QString selected = m_current;
@@ -361,11 +426,19 @@ void MainWindow::refreshContacts() {
     for (auto p : m_peers) {
         auto *i = new QListWidgetItem(p["name"].toString(), m_contacts);
         i->setData(Qt::UserRole, p["id"].toString());
+        if (m_notifications && m_notifications->unread(p["id"].toString())) {
+            i->setText(i->text()+QString("  (%1)").arg(m_notifications->unread(p["id"].toString())));
+            QFont f=i->font(); f.setBold(true);i->setFont(f);
+        }
         i->setToolTip(p["host"].toString() + ":" + QString::number(p["port"].toInt()));
     }
     for (auto it = m_groups.begin(); it != m_groups.end(); ++it) {
         auto *i = new QListWidgetItem(it.value()["name"].toString() + "  · 讨论组", m_contacts);
         i->setData(Qt::UserRole, it.key());
+        if (m_notifications && m_notifications->unread(it.key())) {
+            i->setText(i->text()+QString("  (%1)").arg(m_notifications->unread(it.key())));
+            QFont f=i->font(); f.setBold(true);i->setFont(f);
+        }
     }
     for (int n = 0; n < m_contacts->count(); ++n)
         if (m_contacts->item(n)->data(Qt::UserRole).toString() == selected)
@@ -410,6 +483,7 @@ void MainWindow::selectConversation(QListWidgetItem *item) {
     m_chatTitle->setText(currentName());
     m_chat->setWindowTitle(currentName());
     renderHistory();
+    if (m_notifications && m_chat->isVisible() && m_chat->isActiveWindow() && !m_chat->isMinimized()) m_notifications->markRead(m_current);
 }
 void MainWindow::openConversation() {
     if (m_current.isEmpty()) {
@@ -419,6 +493,8 @@ void MainWindow::openConversation() {
     m_chat->show();
     m_chat->raise();
     m_chat->activateWindow();
+    m_editor->setFocus();
+    if(m_notifications) m_notifications->markRead(m_current);
 }
 void MainWindow::appendMessage(QJsonObject r) {
     QString who =
@@ -428,8 +504,9 @@ void MainWindow::appendMessage(QJsonObject r) {
     QString text = r["text"].toString().toHtmlEscaped().replace("\n", "<br>");
     QString color = r["direction"].toString() == "out" ? "#0060a8" : "#59a224";
     QString t = QDateTime::fromSecsSinceEpoch(qint64(r["timestamp"].toDouble())).toString("MM-dd hh:mm");
-    m_messages->append(QString("<p style='color:%1'>%2 <span style='color:#a6aeb5'>%3</span></p><p>%4</p>")
-                           .arg(color, who.toHtmlEscaped(), t, text));
+    const QString align = r["direction"].toString() == "out" ? "right" : "left";
+    m_messages->append(QString("<p align='%5' style='color:%1;margin-top:12px'>%2 <span style='color:#a6aeb5'>%3</span></p><p align='%5'>%4</p>")
+                           .arg(color, who.toHtmlEscaped(), t, text, align));
     QString path = r["image_path"].toString();
     if (!path.isEmpty()) {
         QImage img(path);
@@ -466,7 +543,7 @@ void MainWindow::renderHistory() {
     for (auto v : m_node->history(m_current)) {
         auto r = v.toObject();
         appendMessage(r);
-        m_history->append(r["text"].toString().toHtmlEscaped());
+
     }
     if (m_demo) {
         m_messages->append(
@@ -474,7 +551,47 @@ void MainWindow::renderHistory() {
             "style='color:#0060a8'>我　10:26</p><p>单聊、讨论组、截图和文件传输都在会话中操作。☺</p>");
         m_history->setPlainText("演示历史记录\n\n这是 C++ / Qt 原生界面演示。");
     }
+    updateHistorySearch();
     m_messages->verticalScrollBar()->setValue(m_messages->verticalScrollBar()->maximum());
+}
+bool MainWindow::eventFilter(QObject *object, QEvent *event) {
+    if (object == m_chat && event->type() == QEvent::WindowActivate && m_notifications && !m_chat->isMinimized()) m_notifications->markRead(m_current);
+    if (object == m_editor && event->type() == QEvent::KeyPress) {
+        auto *key = static_cast<QKeyEvent *>(event);
+        if (key->key() == Qt::Key_Return || key->key() == Qt::Key_Enter) {
+            bool send = m_enterSends ? key->modifiers() == Qt::NoModifier
+                                     : key->modifiers() == Qt::ControlModifier;
+            if (send) { sendMessage(); return true; }
+        }
+    }
+    return QMainWindow::eventFilter(object, event);
+}
+void MainWindow::updateHistorySearch() {
+    m_history->clear();
+    const auto query = m_historySearch->text();
+    for (auto value : m_node->history(m_current)) {
+        auto r = value.toObject();
+        QString body = r["text"].toString();
+        if (!r["image_path"].toString().isEmpty()) body += " [图片]";
+        if (!body.contains(query, Qt::CaseInsensitive)) continue;
+        QString who = r["direction"].toString() == "out" ? "我" : m_peers.value(r["sender_id"].toString())["name"].toString("对方");
+        QString time = QDateTime::fromSecsSinceEpoch(qint64(r["timestamp"].toDouble())).toString("yyyy-MM-dd hh:mm");
+        m_history->append(QString("<p style='color:#7c8b98'>%1 · %2</p><p>%3</p>").arg(who.toHtmlEscaped(),time,body.toHtmlEscaped().replace("\n","<br>")));
+    }
+    if (m_history->toPlainText().isEmpty()) m_history->setPlainText(query.isEmpty() ? "暂无历史记录" : "没有匹配的记录");
+}
+void MainWindow::chooseImage() {
+    QString path = QFileDialog::getOpenFileName(m_chat, "发送图片", {}, "图片 (*.png *.jpg *.jpeg *.bmp *.webp)");
+    if (path.isEmpty()) return;
+    QImageReader reader(path);
+    QSize size = reader.size();
+    if (!size.isValid() || qint64(size.width()) * size.height() > 40000000) {showError("图片无法读取或尺寸过大");return;}
+    reader.setScaledSize(size.scaled(1600, 1600, Qt::KeepAspectRatio));
+    QImage image = reader.read();
+    if (image.isNull()) {showError("无法读取图片");return;}
+    QByteArray bytes; QBuffer buffer(&bytes); buffer.open(QIODevice::WriteOnly); image.save(&buffer,"JPEG",80);
+    if (bytes.size() > 512*1024) {showError("图片压缩后仍超过512KB，请缩小后发送");return;}
+    if (confirm(m_chat,"发送图片",QString("向 %1 发送图片 %2？").arg(currentName(),QFileInfo(path).fileName()))) sendImage(bytes);
 }
 void MainWindow::sendMessage() {
     if (m_current.isEmpty())
@@ -496,25 +613,9 @@ void MainWindow::sendMessage() {
     }
 }
 void MainWindow::chooseEmoji() {
-    QMenu menu(m_chat);
-    auto *w = new QWidget;
-    auto *grid = new QGridLayout(w);
-    QStringList emojis = {"😀", "😁", "😂", "😊", "😍", "😎", "🤔", "😭",
-                          "👍", "👏", "🙏", "🎉", "❤️",  "✅", "👋", "☺"};
-    for (int i = 0; i < emojis.size(); ++i) {
-        auto *b = new QPushButton(emojis[i]);
-        b->setFont(QFont("Segoe UI Emoji", 16));
-        b->setFixedSize(42, 40);
-        connect(b, &QPushButton::clicked, &menu, [this, &menu, e = emojis[i]] {
-            m_editor->insertPlainText(e);
-            menu.close();
-        });
-        grid->addWidget(b, i / 8, i % 8);
-    }
-    auto *wa = new QWidgetAction(&menu);
-    wa->setDefaultWidget(w);
-    menu.addAction(wa);
-    menu.exec(QCursor::pos());
+    EmojiPicker picker(m_chat);
+    connect(&picker, &EmojiPicker::selected, this, [this](QString text) {m_editor->insertPlainText(text);m_editor->setFocus();});
+    picker.exec();
 }
 void MainWindow::chooseFont() {
     bool ok = false;
@@ -607,6 +708,11 @@ void MainWindow::editSettings() {
     auto *font = new QPushButton("聊天字体和字号…");
     connect(font, &QPushButton::clicked, this, &MainWindow::chooseFont);
     sl->addWidget(font);
+    auto *notifications = new QCheckBox("新消息桌面提醒和提示音");
+    notifications->setChecked(m_settings.value("notifications",true).toBool());
+    connect(notifications, &QCheckBox::toggled, this, [this](bool on) {m_settings.setValue("notifications",on);if(m_notifications)m_notifications->setEnabled(on);});
+    sl->addWidget(notifications);
+    sl->addWidget(plainLabel("LanLink 0.5.1 · C++ / Qt 6 原生版\n开发预览，非 Python 便携版。"));
     auto *notice = plainLabel("开发预览，未加密、无设备身份认证。\n仅在可信局域网测试，不要将端口映射到公网。"
                               "\n离线待发保存在发送端，双方再次同时在线后送达。");
     notice->setWordWrap(true);
@@ -688,6 +794,10 @@ void MainWindow::createGroup() {
     for (auto p : m_peers) {
         auto *i = new QListWidgetItem(p["name"].toString(), members);
         i->setData(Qt::UserRole, p["id"].toString());
+        if (m_notifications && m_notifications->unread(p["id"].toString())) {
+            i->setText(i->text()+QString("  (%1)").arg(m_notifications->unread(p["id"].toString())));
+            QFont f=i->font(); f.setBold(true);i->setFont(f);
+        }
         i->setCheckState(Qt::Unchecked);
     }
     l->addWidget(members);
@@ -715,6 +825,11 @@ void MainWindow::event(QString kind, QJsonObject data) {
         m_groups["group:" + data["id"].toString()] = data;
         refreshContacts();
     } else if (kind == "message") {
+        const QString conversation = data["peer_id"].toString();
+        if(m_notifications && data["direction"].toString()=="in") {
+            QString name = conversation.startsWith("group:") ? m_groups.value(conversation)["name"].toString("讨论组") : m_peers.value(conversation)["name"].toString("联系人");
+            m_notifications->incoming(conversation, name, conversation==m_current && m_chat->isVisible() && m_chat->isActiveWindow() && !m_chat->isMinimized());
+        }
         if (data["peer_id"].toString() == m_current)
             renderHistory();
     } else if (kind == "error")
@@ -769,6 +884,7 @@ void MainWindow::saveDemoScreenshot(QString path, QString view) {
         openConversation();
         if (view == "history")
             m_historyPanel->show();
+        QApplication::processEvents();
         m_chat->grab().save(path);
     } else if (view == "transfers") {
         m_transfers->show();

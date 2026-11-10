@@ -10,6 +10,7 @@ class Node;
 class FileTransfer;
 class ScreenService;
 class LinkPreview;
+class ChatNotifications;
 class QTimer;
 class QScreen;
 class QListWidget;
@@ -32,7 +33,9 @@ class MainWindow : public QMainWindow {
     }
 
   private:
+    bool eventFilter(QObject *, QEvent *) override;
     Node *m_node;
+    ChatNotifications *m_notifications = nullptr;
     FileTransfer *m_files = nullptr;
     ScreenService *m_screen = nullptr;
     LinkPreview *m_preview = nullptr;
@@ -42,7 +45,9 @@ class MainWindow : public QMainWindow {
     QHash<QString, QJsonObject> m_peers, m_groups;
     QHash<QString, QString> m_drafts;
     QListWidget *m_contacts;
-    QLineEdit *m_search;
+    QLineEdit *m_search, *m_historySearch;
+    QLabel *m_sendHint;
+    bool m_enterSends = false;
     QTabBar *m_tabs;
     QLabel *m_nickname, *m_address, *m_count;
     QDialog *m_chat, *m_transfers, *m_shares;
@@ -77,6 +82,8 @@ class MainWindow : public QMainWindow {
     void sendMessage();
     void chooseEmoji();
     void chooseFont();
+    void chooseImage();
+    void updateHistorySearch();
     void captureScreenshot();
     void sendImage(QByteArray jpeg);
     void editSettings();

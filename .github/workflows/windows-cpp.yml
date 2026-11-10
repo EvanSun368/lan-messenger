@@ -44,8 +44,8 @@ jobs:
           $p = Start-Process dist/LanLink/LanLink.exe -ArgumentList '--demo','--screenshot',"$PWD/dist/windows-cpp-chat.png",'--view','chat' -PassThru -Wait
           if ($p.ExitCode -ne 0 -or !(Test-Path dist/windows-cpp-chat.png)) { throw 'Packaged chat smoke failed' }
           Copy-Item cpp/VALIDATION.md dist/LanLink/
-          Compress-Archive -Path dist/LanLink -DestinationPath dist/LanLink-0.5.0-cpp-windows-x64.zip
-          (Get-FileHash dist/LanLink-0.5.0-cpp-windows-x64.zip -Algorithm SHA256).Hash | Set-Content dist/LanLink-0.5.0-cpp-windows-x64.sha256
+          Compress-Archive -Path dist/LanLink -DestinationPath dist/LanLink-0.5.1-cpp-windows-x64.zip
+          (Get-FileHash dist/LanLink-0.5.1-cpp-windows-x64.zip -Algorithm SHA256).Hash | Set-Content dist/LanLink-0.5.1-cpp-windows-x64.sha256
       - uses: actions/upload-artifact@v4
         with:
           name: LanLink-Cpp-Windows

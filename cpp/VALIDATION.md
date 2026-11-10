@@ -9,3 +9,11 @@
 - Actual Qt offscreen screenshots inspected, not image-generated UI mockups.
 
 Windows CI is the authoritative packaged-build record. A passing Linux run is not a Windows pass. A demo startup screenshot is not a real two-computer screen capture/transfer test. No full hardware, multi-monitor, large-group throughput, antivirus signing, encryption, or authenticated-device acceptance is claimed.
+
+## 0.5.1 feedback revision
+- Rebuilt native executable and six CTest executables; all passed.
+- Added notification unread/read lifecycle, emoji category/selection, and integrated conversation UI tests.
+- Real legacy Python/C++ text, group, JPEG and profile protocol interoperability passed again.
+- Actual Qt offscreen chat screenshot inspected; CSS descendant overmatching removed.
+- Windows system tray notifications and focus behavior not tested on a real Windows desktop.
+- The user's Python 0.4.0 receiving-side crash has not been reproduced; it is not established as fixed by native migration.

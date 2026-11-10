@@ -1,17 +1,18 @@
-# LanLink C++ / Qt 0.5.0 preview
+# LanLink C++ / Qt 0.5.1 preview
 
 原生 C++17 + Qt6 Widgets/Network/Sql 实现，无 Python 运行时。采用 CMake；Windows 推荐 Qt 6.8.3 MSVC2022 x64。
 
 ## 构建
+先进入本文件所在目录（仓库中为 cpp，源码包解压后为 LanLink-Cpp）。
 ```sh
-cmake -S cpp -B build -DCMAKE_PREFIX_PATH=<Qt路径>
+cmake -S . -B build -DCMAKE_PREFIX_PATH=<Qt路径>
 cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 解压便携包完整目录后运行 LanLink.exe。保持 Qt DLL、plugins 和许可证文件，不可只复制 EXE。未签名开发预览；不要关闭安全软件。
 
 ## 范围
-局域网发现、手动 IP、单聊与固定成员群聊、SQLite 历史和发送端离线队列、字体/字号、表情、区域截图/图片、昵称/个人资料、单文件传输与续传、只读共享、逐人确认的单/群投屏、点击加载网页标题/描述预览。
+局域网发现、手动 IP、单聊与固定成员群聊、SQLite 历史和发送端离线队列、字体/字号、分类表情与最近使用、未读计数/托盘通知、区域截图/图片、昵称/个人资料、单文件传输与续传、只读共享、逐人确认的单/群投屏、点击加载网页标题/描述预览。
 
 - 窄联系人窗口与独立会话窗口按飞鸽9.2公开截图布局实现，不复制其品牌或素材；不是原厂软件，也不保证逐像素一致。
 - 离线消息为发送端暂存；双方需最终同时运行且可达。没有云端存储。
@@ -23,3 +24,5 @@ ctest --test-dir build -C Release --output-on-failure
 - 窗口、字体等使用独立 LanLinkCpp 设置。Python版本保留在原构建分支。
 
 Windows Actions 编译和启动截图不等价两台实体电脑的网络、截图、性能和投屏验收。请勿将自动化通过描述为量产验收。
+
+0.5.1 增加聊天记录搜索、图片文件发送/查看、输入区调节、可选发送快捷键。通知受 Windows 系统设置/免打扰影响，尚待 Windows 实机确认。表情为 Unicode 字符，非动态贴纸包。详见 FEEDBACK_REVIEW.md。
