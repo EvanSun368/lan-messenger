@@ -1,7 +1,9 @@
 name: C++ Qt portable
 on:
   push:
-    branches: ['build/cpp-qt-*']
+    branches: ['main', 'build/cpp-qt-*']
+  pull_request:
+    branches: ['main']
   workflow_dispatch:
 permissions:
   contents: read
