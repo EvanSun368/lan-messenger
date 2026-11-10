@@ -11,4 +11,8 @@ class LinkPreview : public QObject {
     void fetch(QUrl url, Callback callback);
     static bool allowedUrl(const QUrl &url);
     static bool publicAddress(const QHostAddress &address);
+    static QPair<QString, QString> metadata(QString html);
+
+  private:
+    void fetchStep(QUrl url, Callback callback, int redirects, qint64 deadline);
 };

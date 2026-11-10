@@ -96,19 +96,31 @@ QByteArray FileTransfer::sha256(QString p) {
     return h.result().toHex();
 }
 void FileTransfer::hashAsync(QString path, std::function<void(QByteArray)> cb) {
-    if (m_hashJobs >= 4) {
+    if (m_stopping)
+        return;
+    // Bound queued work without confusing temporary saturation with corruption.
+    if (m_hashQueue.size() >= 128) {
         QTimer::singleShot(0, this, [cb]() { cb({}); });
         return;
     }
-    ++m_hashJobs;
-    auto watcher = new QFutureWatcher<QByteArray>(this);
-    connect(watcher, &QFutureWatcher<QByteArray>::finished, this, [this, watcher, cb]() {
-        --m_hashJobs;
-        auto value = watcher->result();
-        watcher->deleteLater();
-        cb(value);
-    });
-    watcher->setFuture(QtConcurrent::run([path]() { return sha256(path); }));
+    m_hashQueue.enqueue({path, std::move(cb)});
+    runNextHash();
+}
+void FileTransfer::runNextHash() {
+    while (!m_stopping && m_hashJobs < 4 && !m_hashQueue.isEmpty()) {
+        auto job = m_hashQueue.dequeue();
+        ++m_hashJobs;
+        auto watcher = new QFutureWatcher<QByteArray>(this);
+        connect(watcher, &QFutureWatcher<QByteArray>::finished, this,
+                [this, watcher, cb = std::move(job.second)]() {
+                    --m_hashJobs;
+                    auto value = watcher->result();
+                    watcher->deleteLater();
+                    cb(value);
+                    runNextHash();
+                });
+        watcher->setFuture(QtConcurrent::run([path = job.first]() { return sha256(path); }));
+    }
 }
 void FileTransfer::metadataAsync(QString host, QString path, QString st,
                                  std::function<void(QJsonObject)> cb) {
@@ -371,6 +383,15 @@ void FileTransfer::acceptFile(QString id, QString dir) {
         QPointer<QTcpSocket> safe(s);
         hashAsync(part, [this, safe, item, id, part, dest, total](QByteArray hash) {
             m_verifying.remove(id);
+            // Empty hash is an I/O/busy failure, not evidence of bad contents.
+            // Keep the fully downloaded part so verification can be retried.
+            if (hash.isEmpty()) {
+                emit error("暂时无法校验文件，部分文件已保留，请重试");
+                emit progress(id, total, total, "待校验，可重试");
+                if (safe)
+                    safe->abort();
+                return;
+            }
             if (QString::fromLatin1(hash) != item["sha256"].toString()) {
                 QFile::remove(part);
                 emit error("SHA256 校验失败，请重试");

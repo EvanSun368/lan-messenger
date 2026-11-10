@@ -193,6 +193,65 @@ class FileTests : public QObject {
         while (silent.hasPendingConnections())
             delete silent.nextPendingConnection();
     }
+    void hashSaturationQueues() {
+        QTemporaryDir root;
+        Node node("hash", root.path());
+        FileTransfer files(&node);
+        QString path = root.path() + "/hash.bin";
+        QFile file(path);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write(QByteArray(1024 * 1024, 'h'));
+        file.close();
+        QByteArray expected = FileTransfer::sha256(path);
+        int completed = 0;
+        for (int i = 0; i < 16; ++i)
+            files.hashAsync(path, [&](QByteArray hash) {
+                QCOMPARE(hash, expected);
+                ++completed;
+            });
+        QCOMPARE(files.m_hashJobs, 4);
+        QCOMPARE(files.m_hashQueue.size(), 12);
+        QTRY_COMPARE(completed, 16);
+        QCOMPARE(files.m_hashJobs, 0);
+        QVERIFY(files.m_hashQueue.isEmpty());
+    }
+    void busyVerificationPreservesPart() {
+        QTemporaryDir a, b, d;
+        Node sender("sender", a.path()), receiver("receiver", b.path());
+        FileTransfer send(&sender), receive(&receiver);
+        sender.serviceHandler = [&](auto s, auto r, auto h) { return send.handle(s, r, h); };
+        receiver.serviceHandler = [&](auto s, auto r, auto h) { return receive.handle(s, r, h); };
+        QVERIFY(sender.start(0, 0));
+        QVERIFY(receiver.start(0, 0));
+        sender.addPeer("127.0.0.1", receiver.port());
+        QTRY_COMPARE(sender.peers().size(), 1);
+        QFile source(a.path() + "/busy.bin");
+        QVERIFY(source.open(QIODevice::WriteOnly));
+        source.write(QByteArray(8192, 'b'));
+        source.close();
+        QSignalSpy offered(&receive, &FileTransfer::offerReceived), errors(&receive, &FileTransfer::error),
+            complete(&receive, &FileTransfer::completed);
+        send.offerFile(receiver.id(), source.fileName());
+        QTRY_COMPARE(offered.size(), 1);
+        QString id = offered.first()[0].toJsonObject()["id"].toString();
+        // Deterministically simulate all workers and the bounded queue occupied.
+        receive.m_hashJobs = 4;
+        for (int i = 0; i < 128; ++i)
+            receive.m_hashQueue.enqueue({source.fileName(), [](QByteArray) {}});
+        receive.acceptFile(id, d.path());
+        QTRY_COMPARE(errors.size(), 1);
+        QString part = d.path() + "/.lanlink-" + id + ".part";
+        QVERIFY(QFileInfo::exists(part));
+        QCOMPARE(QFileInfo(part).size(), qint64(8192));
+        QVERIFY(!QFileInfo::exists(d.path() + "/busy.bin"));
+        QCOMPARE(receive.incomingOffers().size(), 1);
+        receive.m_hashJobs = 0;
+        receive.m_hashQueue.clear();
+        QTRY_VERIFY(!receive.m_active.contains(id));
+        receive.acceptFile(id, d.path());
+        QTRY_COMPARE(complete.size(), 1);
+        QCOMPARE(FileTransfer::sha256(source.fileName()), FileTransfer::sha256(d.path() + "/busy.bin"));
+    }
     void paths() {
         QTemporaryDir a, b;
         Node n1("one", a.path()), n2("two", b.path());

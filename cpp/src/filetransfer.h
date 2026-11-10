@@ -4,6 +4,7 @@
 #include <QJsonObject>
 #include <QObject>
 #include <QPointer>
+#include <QQueue>
 #include <QSet>
 #include <QTcpSocket>
 #include <functional>
@@ -36,11 +37,14 @@ class FileTransfer : public QObject {
     void error(QString message);
 
   private:
+    friend class FileTests;
     Node *m_node;
     QJsonObject m_incoming, m_outgoing, m_shares;
     QHash<QString, QPointer<QTcpSocket>> m_active;
     QSet<QString> m_verifying;
     int m_hashJobs = 0;
+    QQueue<QPair<QString, std::function<void(QByteArray)>>> m_hashQueue;
+    void runNextHash();
     bool m_stopping = false;
     void persist();
     void prune();
