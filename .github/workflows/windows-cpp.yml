@@ -1,0 +1,54 @@
+name: C++ Qt portable
+on:
+  push:
+    branches: ['build/cpp-qt-*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          arch: win64_msvc2022_64
+          cache: true
+      - name: Configure and compile C++
+        run: |
+          cmake -S cpp -B build-cpp -A x64
+          cmake --build build-cpp --config Release --parallel 4
+      - name: Native Qt tests
+        run: ctest --test-dir build-cpp -C Release --output-on-failure
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Python C++ protocol interoperability
+        run: |
+          python -m pip install PySide6==6.8.3
+          python cpp/tools/interop_test.py --peer build-cpp/Release/interop_peer.exe --python-root .
+      - name: Deploy and smoke test actual executable
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist/LanLink | Out-Null
+          Copy-Item build-cpp/Release/LanLink.exe dist/LanLink/
+          windeployqt --release --no-translations --compiler-runtime dist/LanLink/LanLink.exe
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Copy-Item cpp/README.md dist/LanLink/
+          Copy-Item cpp/THIRD-PARTY.md dist/LanLink/
+          Copy-Item packaging/licenses dist/LanLink/licenses -Recurse
+          $p = Start-Process dist/LanLink/LanLink.exe -ArgumentList '--demo','--screenshot',"$PWD/dist/windows-cpp.png" -PassThru -Wait
+          if ($p.ExitCode -ne 0 -or !(Test-Path dist/windows-cpp.png)) { throw 'Packaged GUI smoke failed' }
+          Compress-Archive -Path dist/LanLink -DestinationPath dist/LanLink-0.5.0-cpp-windows-x64.zip
+          (Get-FileHash dist/LanLink-0.5.0-cpp-windows-x64.zip -Algorithm SHA256).Hash | Set-Content dist/LanLink-0.5.0-cpp-windows-x64.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LanLink-Cpp-Windows
+          path: |
+            dist/*.zip
+            dist/*.sha256
+            dist/*.png
+          if-no-files-found: error
+          retention-days: 14
