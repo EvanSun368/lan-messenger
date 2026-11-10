@@ -9,6 +9,45 @@
 #include <QtWidgets>
 
 namespace {
+QString interfaceFontFamily() {
+    const auto available = QFontDatabase::families();
+    for (const QString &family : {QString("Microsoft YaHei UI"), QString("Microsoft YaHei"), QString("Noto Sans CJK SC"), QString("Noto Sans SC")})
+        if (available.contains(family)) return family;
+    return QFontDatabase::systemFont(QFontDatabase::GeneralFont).family();
+}
+QIcon lineIcon(const QString &name, QColor color = QColor("#73808b")) {
+    QIcon icon;
+    for (int scale : {1, 2, 3}) {
+        QPixmap pix(24*scale,24*scale); pix.fill(Qt::transparent);
+        QPainter p(&pix); p.setRenderHint(QPainter::Antialiasing); p.scale(scale,scale);
+        p.setPen(QPen(color,1.5,Qt::SolidLine,Qt::RoundCap,Qt::RoundJoin));
+        if (name == "表情") {
+            p.drawEllipse(QRectF(3.5,3.5,17,17)); p.drawPoint(9,9);p.drawPoint(15,9);
+            p.drawArc(QRectF(7,8,10,9),200*16,140*16);
+        } else if (name == "截图") {
+            p.drawEllipse(QRectF(3,14,5,5));p.drawEllipse(QRectF(14,14,5,5));
+            p.drawLine(7,15,16,4); p.drawLine(15,15,6,4);
+        } else if (name == "图片") {
+            p.drawRoundedRect(QRectF(3,4,18,16),1,1);p.drawEllipse(QRectF(6,7,3,3));
+            p.drawPolyline(QPolygonF{QPointF(4,18),QPointF(10,12),QPointF(14,16),QPointF(17,12),QPointF(20,16)});
+        } else if (name == "文件") {
+            p.drawPolyline(QPolygonF{QPointF(14,3),QPointF(6,3),QPointF(6,21),QPointF(19,21),QPointF(19,8),QPointF(14,3),QPointF(14,8),QPointF(19,8)});
+            p.drawLine(9,12,16,12);p.drawLine(9,16,16,16);
+        } else if (name == "投屏") {
+            p.drawRoundedRect(QRectF(2,4,20,14),1,1);p.drawLine(9,21,15,21);p.drawLine(12,18,12,21);
+        } else if (name == "历史") {
+            p.drawEllipse(QRectF(3,3,18,18));p.drawLine(12,7,12,12);p.drawLine(12,12,16,14);
+        } else if (name == "更多") {
+            p.setBrush(color);p.setPen(Qt::NoPen);for(int x:{5,12,19}) p.drawEllipse(QPointF(x,12),1.5,1.5);
+        } else if (name == "close") {p.drawLine(8,8,16,16);p.drawLine(16,8,8,16);
+        } else if (name == "maximize") {p.drawRect(QRectF(7,7,10,10));
+        } else if (name == "minimize") {p.drawLine(7,13,17,13);
+        } else if (name == "add") {p.drawLine(6,12,18,12);p.drawLine(12,6,12,18);
+        } else if (name == "down") {p.drawPolyline(QPolygonF{QPointF(8,10),QPointF(12,14),QPointF(16,10)});}
+        p.end();pix.setDevicePixelRatio(scale);icon.addPixmap(pix);
+    }
+    return icon;
+}
 QLabel *plainLabel(const QString &s, QWidget *p = nullptr) {
     auto *l = new QLabel(s, p);
     l->setTextFormat(Qt::PlainText);
@@ -20,6 +59,29 @@ bool confirm(QWidget *w, QString title, QString text) {
     b.setDefaultButton(QMessageBox::No);
     return b.exec() == QMessageBox::Yes;
 }
+class MessageText : public QTextBrowser {
+  public:
+    MessageText(QString text, QFont font, QWidget *parent=nullptr) : QTextBrowser(parent) {
+        setObjectName("messageText");
+        setFrameShape(QFrame::NoFrame);
+        setOpenLinks(false);setOpenExternalLinks(false);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setStyleSheet("QTextBrowser{background:transparent;border:0;padding:0;}");
+        document()->setDocumentMargin(0);
+        QTextOption option;option.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+        document()->setDefaultTextOption(option);
+        setPlainText(text); applyFont(font);
+    }
+    void applyFont(const QFont &font) {
+        setFont(font);document()->setDefaultFont(font);
+        int naturalWidth=0;
+        for(const auto &line:toPlainText().split('\n')) naturalWidth=qMax(naturalWidth,QFontMetrics(font).horizontalAdvance(line));
+        const int width=qBound(60,naturalWidth+4,320);
+        setFixedWidth(width); document()->setTextWidth(width);
+        setFixedHeight(qCeil(document()->size().height())+2);
+    }
+};
 class TitleBar : public QWidget {
     QPoint m_offset;
     QWidget *m_window;
@@ -27,15 +89,21 @@ class TitleBar : public QWidget {
   public:
     QLabel *label;
     TitleBar(QWidget *window, QString text) : m_window(window) {
-        setObjectName("titleBar");
+        const bool modern = window->objectName() == "chatWindow";
+        setObjectName(modern ? "chatTitleBar" : "titleBar");
         auto *l = new QHBoxLayout(this);
-        l->setContentsMargins(9, 3, 4, 3);
+        setFixedHeight(modern ? 56 : 36);
+        l->setSpacing(0);
+        l->setContentsMargins(12, 0, 0, 0);
         label = plainLabel(text);
-        label->setStyleSheet("color:white;font-weight:600");
+        label->setStyleSheet(modern ? "color:#26384b;font-size:16px;font-weight:600;" : "color:white;font-weight:500;");
         l->addWidget(label, 1);
         for (auto s : {QString("−"), QString("□"), QString("×")}) {
-            auto *b = new QPushButton(s);
-            b->setFixedSize(28, 25);
+            auto *b = new QPushButton;
+            b->setIcon(lineIcon(s == "×" ? "close" : s == "□" ? "maximize" : "minimize", modern ? QColor("#7a8897") : QColor(Qt::white)));
+            b->setIconSize(QSize(24,24));
+            b->setToolTip(s == "×" ? "关闭" : s == "□" ? "最大化 / 还原" : "最小化");
+            b->setFixedSize(40, 36);
             b->setObjectName("titleButton");
             l->addWidget(b);
             connect(b, &QPushButton::clicked, this, [this, s] {
@@ -129,8 +197,10 @@ MainWindow::MainWindow(QString storage, quint16 port, bool demo, QWidget *parent
         storage, this);
     connect(m_node, &Node::event, this, &MainWindow::event);
     m_enterSends = m_settings.value("enterSends", false).toBool();
-    m_chatFont = QFont(m_settings.value("fontFamily", "Microsoft YaHei UI").toString(),
+    m_chatFont = QFont(m_settings.value("fontFamily", interfaceFontFamily()).toString(),
                        qBound(8, m_settings.value("fontSize", 11).toInt(), 24));
+    if (!QFontDatabase::families().contains(m_chatFont.family())) m_chatFont.setFamily(interfaceFontFamily());
+    m_chatFont.setStyleStrategy(QFont::PreferAntialias);
     buildUi();
     buildFiles();
     buildSharing();
@@ -185,26 +255,41 @@ MainWindow::~MainWindow() {
 void MainWindow::buildUi() {
     setWindowTitle("LanLink · C++ Qt 开发预览");
     setWindowFlag(Qt::FramelessWindowHint);
-    setFont(QFont("Microsoft YaHei UI", 10));
+    QFont uiFont(interfaceFontFamily(), 10);
+    uiFont.setStyleStrategy(QFont::PreferAntialias);
+    setFont(uiFont);
     resize(362, 800);
     setMinimumSize(340, 600);
     setStyleSheet(
-        "QMainWindow,QDialog{background:white;} "
-        "QWidget#titleBar,QWidget#profileHeader,QWidget#footerBar{background:#2196ed;} "
-        "QPushButton{padding:5px 10px;border:1px solid #c6d5df;border-radius:2px;background:#f5f9fc;} "
-        "QPushButton:hover{background:#e5f2fd;} "
-        "QPushButton#titleButton{color:white;background:transparent;border:0;padding:0;font-size:18px;} "
-        "QLabel#nickname{font-size:19px;font-weight:bold;color:white;} QLabel#profileAddress{color:white;} "
-        "QPushButton#profileAction{border:0;color:white;background:transparent;} QTabBar::tab{padding:15px "
-        "17px;background:white;border-bottom:2px solid white;} QTabBar::tab:selected{border-bottom:2px solid "
-        "#2196ed;color:#168bdd;} QListWidget{border:0;background:white;} QListWidget::item{padding:13px "
-        "8px;} QListWidget::item:selected{background:#e2f2ff;color:#164668;} "
-        "QLineEdit{padding:6px;border:1px solid #d2dee7;background:#fff;} "
-        "QTextBrowser{border:0;background:white;} QPlainTextEdit{border:0;background:white;} "
-        "QPushButton#primary{background:#e9f6ff;border:1px solid #6aa9d2;} "
-        "QToolButton{border:0;background:transparent;padding:5px 8px;color:#506478;} "
-        "QToolButton:hover{background:#e6f3ff;} QSplitter::handle{background:#e6ebef;} "
-        "QStatusBar{background:#2196ed;color:white;font-size:10px;}");
+        "QMainWindow,QDialog{background:#ffffff;color:#263442;} "
+        "QWidget#chatTitleBar{background:white;border-bottom:1px solid #e9edf2;} "
+        "QScrollArea#messages{border:0;background:#f3f5f8;} QWidget#messageCanvas{background:#f3f5f8;} "
+        "QWidget#titleBar,QWidget#profileHeader,QWidget#footerBar{background:#2298ee;} "
+        "QPushButton{padding:5px 14px;min-height:20px;border:1px solid #cbd6df;border-radius:3px;background:#ffffff;color:#344454;} "
+        "QPushButton:hover{background:#edf6fd;border-color:#9dc8e9;} QPushButton:pressed{background:#dceefd;} "
+        "QPushButton:disabled{color:#a9b3bc;background:#f7f8fa;border-color:#e4e9ee;} "
+        "QPushButton#titleButton{background:transparent;border:0;padding:0;min-height:0;} "
+        "QPushButton#titleButton:hover{background:rgba(255,255,255,30);} "
+        "QLabel#nickname{font-size:19px;font-weight:600;color:white;} QLabel#profileAddress{color:#e6f4ff;} "
+        "QPushButton#profileAction{border:0;color:white;background:transparent;padding:4px 8px;} "
+        "QTabBar::tab{padding:12px 16px;background:white;border-bottom:2px solid white;color:#667787;} "
+        "QTabBar::tab:selected{border-bottom:2px solid #2298ee;color:#168bdd;} "
+        "QListWidget{border:0;background:white;} QListWidget::item{padding:13px 8px;} "
+        "QListWidget::item:selected{background:#e7f3fc;color:#164668;} "
+        "QLineEdit{padding:7px 9px;border:1px solid #d9e1e8;border-radius:3px;background:#fff;color:#344454;} "
+        "QLineEdit:focus{border-color:#87bce5;} "
+        "QTextBrowser{border:0;background:white;color:#263442;} QPlainTextEdit{border:0;background:white;color:#263442;selection-background-color:#cae6fb;} "
+        "QPushButton#primary{background:#2298ee;border:1px solid #2298ee;color:white;} "
+        "QPushButton#primary:hover{background:#1489df;} "
+        "QToolButton{border:0;border-radius:3px;background:transparent;padding:0;color:#6c7b89;} "
+        "QToolButton:hover{background:#edf5fc;} QToolButton:pressed{background:#dcecf9;} "
+        "QToolButton::menu-indicator{image:none;width:0;} "
+        "QToolButton#sendOptions{border:1px solid #2298ee;background:#2298ee;border-radius:3px;} "
+        "QToolButton#sendOptions:hover{background:#1489df;} "
+        "QSplitter::handle{background:#e7ecf1;} "
+        "QMenu{background:white;border:1px solid #d4dde5;padding:5px;color:#344454;} "
+        "QMenu::item{padding:7px 24px;} QMenu::item:selected{background:#e7f3fc;} "
+        "QStatusBar{background:#2298ee;color:white;font-size:11px;}");
     auto *root = new QWidget;
     setCentralWidget(root);
     auto *outer = new QVBoxLayout(root);
@@ -244,9 +329,12 @@ void MainWindow::buildUi() {
     m_search->setPlaceholderText("搜索");
     connect(m_search, &QLineEdit::textChanged, this, &MainWindow::filterContacts);
     searchRow->addWidget(m_search, 1);
-    auto *add = new QPushButton("＋");
-    add->setFixedSize(30, 30);
-    add->setStyleSheet("padding:0;text-align:left;");
+    auto *add = new QToolButton;
+    add->setIcon(lineIcon("add",Qt::white));
+    add->setIconSize(QSize(24,24));
+    add->setFixedSize(32, 32);
+    add->setToolTip("添加联系人或创建讨论组");
+    add->setPopupMode(QToolButton::InstantPopup);
     auto *menu = new QMenu(add);
     menu->addAction("添加设备 IP", this, &MainWindow::addPeer);
     menu->addAction("创建讨论组", this, &MainWindow::createGroup);
@@ -310,14 +398,29 @@ void MainWindow::buildUi() {
     auto *cl = new QVBoxLayout(conversation);
     cl->setContentsMargins(0, 0, 0, 0);
     cl->setSpacing(0);
-    m_messages = new QTextBrowser;
+    m_messages = new QScrollArea;
     m_messages->setObjectName("messages");
-    m_messages->setOpenLinks(false);
-    m_messages->setOpenExternalLinks(false);
-    m_messages->setFont(m_chatFont);
-    connect(m_messages, &QTextBrowser::anchorClicked, this, &MainWindow::openLink);
-    m_messages->setContextMenuPolicy(Qt::DefaultContextMenu);
-    m_messages->document()->setDocumentMargin(16);
+    m_messages->setWidgetResizable(true);
+    m_messages->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    auto *messageCanvas = new QWidget;
+    messageCanvas->setObjectName("messageCanvas");
+    m_messageLayout = new QVBoxLayout(messageCanvas);
+    m_messageLayout->setContentsMargins(24,20,24,24);
+    m_messageLayout->setSpacing(20);
+    m_messageLayout->addStretch();
+    m_messages->setWidget(messageCanvas);
+    m_messages->viewport()->installEventFilter(this);
+    connect(m_messages->verticalScrollBar(),&QScrollBar::sliderMoved,this,[this]{++m_scrollGeneration;m_scrollRestorePending=false;});
+    connect(m_messages->verticalScrollBar(),&QScrollBar::actionTriggered,this,[this](int){++m_scrollGeneration;m_scrollRestorePending=false;});
+    connect(m_messages->verticalScrollBar(),&QScrollBar::rangeChanged,this,[this](int,int) {
+        if(!m_scrollRestorePending)return;
+        const auto generation=m_scrollGeneration;
+        QTimer::singleShot(0,this,[this,generation] {
+            if(!m_scrollRestorePending || generation!=m_scrollGeneration)return;
+            auto *bar=m_messages->verticalScrollBar();
+            bar->setValue(m_scrollFollowBottom?bar->maximum():m_scrollPosition);
+        });
+    });
     auto *verticalSplit = new QSplitter(Qt::Vertical);
     verticalSplit->setObjectName("composeSplitter");
     verticalSplit->setChildrenCollapsible(false);
@@ -325,21 +428,33 @@ void MainWindow::buildUi() {
     verticalSplit->addWidget(m_messages);
     auto *compose = new QWidget;
     compose->setObjectName("composePanel");
-    compose->setStyleSheet("QWidget#composePanel{border-top:1px solid #e0e5eb;}");
+    compose->setStyleSheet("QWidget#composePanel{background:white;border-top:1px solid #e7ecf2;}");
     auto *cpl = new QVBoxLayout(compose);
-    cpl->setContentsMargins(7, 5, 7, 6);
+    cpl->setContentsMargins(12, 6, 12, 10);
+    cpl->setSpacing(8);
     auto *toolbar = new QHBoxLayout;
+    toolbar->setSpacing(4);
     for (auto action : QList<QPair<QString, std::function<void()>>>{{"表情", [this] { chooseEmoji(); }},
             {"截图", [this] { captureScreenshot(); }}, {"图片", [this] { chooseImage(); }},
             {"文件", [this] { sendFile(); }}, {"投屏", [this] { openScreen(); }}}) {
         auto *b = new QToolButton;
         b->setText(action.first);
+        b->setAccessibleName(action.first);
         b->setToolTip(action.first);
+        b->setIcon(lineIcon(action.first));
+        b->setIconSize(QSize(22,22));
+        b->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        b->setFixedSize(32,32);
         connect(b, &QToolButton::clicked, this, action.second);
         toolbar->addWidget(b);
     }
     auto *more = new QToolButton;
     more->setText("更多");
+    more->setAccessibleName("更多功能");
+    more->setToolTip("更多：字体、资料、传输记录");
+    more->setIcon(lineIcon("更多"));
+    more->setIconSize(QSize(22,22));
+    more->setFixedSize(32,32);
     more->setPopupMode(QToolButton::InstantPopup);
     auto *moreMenu = new QMenu(more);
     moreMenu->addAction("聊天字体…", this, &MainWindow::chooseFont);
@@ -348,7 +463,12 @@ void MainWindow::buildUi() {
     more->setMenu(moreMenu);
     toolbar->addWidget(more);
     toolbar->addStretch();
-    auto *history = new QPushButton("聊天记录");
+    auto *history = new QToolButton;
+    history->setText("聊天记录");
+    history->setIcon(lineIcon("历史"));
+    history->setIconSize(QSize(18,18));
+    history->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    history->setFixedSize(96,32);
     connect(history, &QPushButton::clicked, this,
             [this] { m_historyPanel->setVisible(!m_historyPanel->isVisible()); });
     toolbar->addWidget(history);
@@ -357,25 +477,31 @@ void MainWindow::buildUi() {
     m_editor->setObjectName("editor");
     m_editor->setPlaceholderText("输入消息…");
     m_editor->setFont(m_chatFont);
-    m_editor->setMinimumHeight(64);
+    m_editor->setMinimumHeight(72);
+    m_editor->setStyleSheet("QPlainTextEdit{background:#f6f8fb;border:1px solid #e8edf2;border-radius:8px;padding:8px;}");
+    m_editor->document()->setDocumentMargin(4);
     m_editor->installEventFilter(this);
     m_chat->installEventFilter(this);
     cpl->addWidget(m_editor);
     auto *bottom = new QHBoxLayout;
     m_sendHint = plainLabel(m_enterSends ? "Enter 发送 · Shift+Enter 换行" : "Ctrl+Enter 发送 · Enter 换行");
-    m_sendHint->setStyleSheet("color:#8a96a3;font-size:11px;border:0;");
+    m_sendHint->setStyleSheet("color:#929daa;border:0;");
     bottom->addWidget(m_sendHint);
     bottom->addStretch();
     auto *close = new QPushButton("关闭");
     connect(close, &QPushButton::clicked, m_chat, &QDialog::hide);
+    close->setFixedSize(78,32);
     bottom->addWidget(close);
     auto *send = new QPushButton("发送");
-    send->setMinimumWidth(86);
+    send->setFixedSize(78,32);
     send->setObjectName("primary");
     connect(send, &QPushButton::clicked, this, &MainWindow::sendMessage);
     bottom->addWidget(send);
     auto *sendOptions = new QToolButton;
-    sendOptions->setText("▾");
+    sendOptions->setIcon(lineIcon("down",Qt::white));
+    sendOptions->setFixedSize(28,32);
+    sendOptions->setToolTip("发送快捷键");
+    sendOptions->setAccessibleName("发送快捷键设置");
     sendOptions->setObjectName("sendOptions");
     sendOptions->setPopupMode(QToolButton::InstantPopup);
     auto *sendMenu = new QMenu(sendOptions);
@@ -394,15 +520,17 @@ void MainWindow::buildUi() {
     cpl->addLayout(bottom);
     verticalSplit->addWidget(compose);
     verticalSplit->setSizes({510, 200});
+    verticalSplit->setHandleWidth(1);
     verticalSplit->setStretchFactor(0, 3);
     verticalSplit->setStretchFactor(1, 1);
     split->addWidget(conversation);
+    split->setHandleWidth(1);
     m_historyPanel = new QWidget;
     auto *hl = new QVBoxLayout(m_historyPanel);
     hl->setContentsMargins(10, 10, 10, 10);
     auto *historyHeader = new QHBoxLayout;
     historyHeader->addWidget(plainLabel("聊天记录"), 1);
-    auto *historyClose = new QToolButton; historyClose->setText("×");
+    auto *historyClose = new QToolButton; historyClose->setIcon(lineIcon("close")); historyClose->setFixedSize(24,24);
     historyClose->setToolTip("关闭记录侧栏");
     connect(historyClose, &QToolButton::clicked, m_historyPanel, &QWidget::hide);
     historyHeader->addWidget(historyClose); hl->addLayout(historyHeader);
@@ -413,7 +541,7 @@ void MainWindow::buildUi() {
     m_history = new QTextBrowser;
     hl->addWidget(m_history);
     m_historyPanel->setMinimumWidth(220);
-    m_historyPanel->setMaximumWidth(340);
+    m_historyPanel->setMaximumWidth(280);
     split->addWidget(m_historyPanel);
     m_historyPanel->hide();
     split->setSizes({720, 280});
@@ -482,7 +610,7 @@ void MainWindow::selectConversation(QListWidgetItem *item) {
     m_editor->setPlainText(m_drafts.value(m_current));
     m_chatTitle->setText(currentName());
     m_chat->setWindowTitle(currentName());
-    renderHistory();
+    renderHistory(false);
     if (m_notifications && m_chat->isVisible() && m_chat->isActiveWindow() && !m_chat->isMinimized()) m_notifications->markRead(m_current);
 }
 void MainWindow::openConversation() {
@@ -497,48 +625,82 @@ void MainWindow::openConversation() {
     if(m_notifications) m_notifications->markRead(m_current);
 }
 void MainWindow::appendMessage(QJsonObject r) {
-    QString who =
-        r["direction"].toString() == "out"
-            ? "我"
-            : m_peers.value(r["sender_id"].toString(), m_peers.value(m_current))["name"].toString("对方");
-    QString text = r["text"].toString().toHtmlEscaped().replace("\n", "<br>");
-    QString color = r["direction"].toString() == "out" ? "#0060a8" : "#59a224";
-    QString t = QDateTime::fromSecsSinceEpoch(qint64(r["timestamp"].toDouble())).toString("MM-dd hh:mm");
-    const QString align = r["direction"].toString() == "out" ? "right" : "left";
-    m_messages->append(QString("<p align='%5' style='color:%1;margin-top:12px'>%2 <span style='color:#a6aeb5'>%3</span></p><p align='%5'>%4</p>")
-                           .arg(color, who.toHtmlEscaped(), t, text, align));
-    QString path = r["image_path"].toString();
-    if (!path.isEmpty()) {
-        QImage img(path);
-        if (!img.isNull()) {
-            QUrl key("lanlink-image:" + r["id"].toString());
-            m_messages->document()->addResource(QTextDocument::ImageResource, key, img);
-            auto cursor = m_messages->textCursor();
-            cursor.movePosition(QTextCursor::End);
-            QTextImageFormat f;
-            f.setName(key.toString());
-            QSize size = img.size().scaled(480, 320, Qt::KeepAspectRatio);
-            f.setWidth(size.width());
-            f.setHeight(size.height());
-            cursor.insertImage(f);
-            cursor.insertBlock();
-        }
+    auto *bar=m_messages->verticalScrollBar();
+    const bool wasAtBottom=bar->maximum()-bar->value()<24;
+    const int previousPosition=bar->value();
+    const bool mine = r["direction"].toString() == "out";
+    const QString who = mine ? "我" : m_peers.value(r["sender_id"].toString(), m_peers.value(m_current))["name"].toString("对方");
+    auto *row = new QWidget;
+    auto *horizontal = new QHBoxLayout(row); horizontal->setContentsMargins(0,0,0,0); horizontal->setSpacing(10);
+    auto *avatar = plainLabel(mine ? "我" : who.left(1));
+    avatar->setFixedSize(36,36);avatar->setAlignment(Qt::AlignCenter);
+    avatar->setStyleSheet(mine ? "background:#2688e8;color:white;border-radius:10px;font-size:15px;" : "background:#dfe9f5;color:#597b9c;border-radius:10px;font-size:15px;");
+    auto *column = new QWidget; column->setMaximumWidth(570);
+    auto *vertical = new QVBoxLayout(column);vertical->setContentsMargins(0,0,0,0);vertical->setSpacing(6);
+    QString time=QDateTime::fromSecsSinceEpoch(qint64(r["timestamp"].toDouble())).toString("hh:mm");
+    auto *caption = plainLabel(who+"  "+time); caption->setStyleSheet("color:#8997a6;font-size:12px;");caption->setAlignment(mine?Qt::AlignRight:Qt::AlignLeft);
+    vertical->addWidget(caption);
+    auto *bubble = new QFrame;
+    bubble->setObjectName("messageBubble");
+    bubble->setStyleSheet(mine ? "QFrame#messageBubble{background:#dceeff;border:1px solid #cfe5fa;border-radius:10px;}" : "QFrame#messageBubble{background:white;border:1px solid #e6ebf0;border-radius:10px;}");
+    auto *body = new QVBoxLayout(bubble);body->setContentsMargins(14,10,14,10);body->setSpacing(8);
+    if(!r["text"].toString().isEmpty()) {
+        auto *text=new MessageText(r["text"].toString(),m_chatFont);
+        body->addWidget(text);
     }
-    QRegularExpression rx("https?://[^\\s<>]+", QRegularExpression::CaseInsensitiveOption);
-    auto it = rx.globalMatch(r["text"].toString());
-    int links = 0;
-    while (it.hasNext() && links < 3) {
-        QUrl url(it.next().captured());
-        if (!url.isValid() || url.host().isEmpty())
-            continue;
-        ++links;
-        m_messages->append(
-            QString("<a href='%1'>预览链接：%2</a>")
-                .arg(QString::fromLatin1(url.toEncoded()).toHtmlEscaped(), url.host().toHtmlEscaped()));
+    QImage image;
+    if(!r["image_path"].toString().isEmpty()) image.load(r["image_path"].toString());
+    if(!image.isNull()) {
+        auto *pic=new QToolButton; pic->setObjectName("messageImage");
+        auto thumb=QPixmap::fromImage(image).scaled(320,240,Qt::KeepAspectRatio,Qt::SmoothTransformation);
+        pic->setIcon(QIcon(thumb));pic->setIconSize(thumb.size());pic->setFixedSize(thumb.size());
+        pic->setToolTip("点击查看原图");pic->setCursor(Qt::PointingHandCursor);
+        connect(pic,&QToolButton::clicked,this,[this,image] {
+            auto *viewer=new QDialog(m_chat);viewer->setAttribute(Qt::WA_DeleteOnClose);
+            viewer->setObjectName("imageViewer");viewer->setWindowTitle("图片 · 原始大小");viewer->resize(820,620);
+            auto *layout=new QVBoxLayout(viewer);auto *scroll=new QScrollArea;
+            auto *original=new QLabel;original->setPixmap(QPixmap::fromImage(image));original->setFixedSize(image.size());
+            original->setObjectName("originalImage");scroll->setWidget(original);layout->addWidget(scroll);
+            auto *close=new QDialogButtonBox(QDialogButtonBox::Close);layout->addWidget(close);
+            connect(close,&QDialogButtonBox::rejected,viewer,&QDialog::close);viewer->show();
+        });body->addWidget(pic);
     }
+    QRegularExpression rx("https?://[^\\s<>]+",QRegularExpression::CaseInsensitiveOption);
+    auto match=rx.globalMatch(r["text"].toString()); int count=0;
+    while(match.hasNext()&&count<3) {
+        QUrl url(match.next().captured()); if(!url.isValid()||url.host().isEmpty())continue;++count;
+        auto *link=new QPushButton(QFontMetrics(font()).elidedText("预览链接 · "+url.host(),Qt::ElideMiddle,270));link->setMaximumWidth(320);link->setToolTip(url.toDisplayString());
+        connect(link,&QPushButton::clicked,this,[this,url]{openLink(url);});body->addWidget(link);
+    }
+    vertical->addWidget(bubble);
+    if(mine) horizontal->addStretch(1); else horizontal->addWidget(avatar,0,Qt::AlignTop);
+    horizontal->addWidget(column,0,Qt::AlignTop);
+    if(mine) horizontal->addWidget(avatar,0,Qt::AlignTop); else horizontal->addStretch(1);
+    m_messageLayout->insertWidget(m_messageLayout->count()-1,row);
+    if(!m_rebuildingMessages) restoreMessageScroll(previousPosition,wasAtBottom);
 }
-void MainWindow::renderHistory() {
-    m_messages->clear();
+void MainWindow::restoreMessageScroll(int position, bool bottom) {
+    m_scrollRestorePending=true;m_scrollPosition=position;m_scrollFollowBottom=bottom;
+    const auto generation=++m_scrollGeneration;
+    QTimer::singleShot(0,this,[this,position,bottom,generation] {
+        if(generation!=m_scrollGeneration)return;
+        m_messageLayout->activate();
+        m_messages->widget()->adjustSize();
+        QTimer::singleShot(0,this,[this,position,bottom,generation] {
+            if(generation!=m_scrollGeneration)return;
+            auto *bar=m_messages->verticalScrollBar();bar->setValue(bottom?bar->maximum():position);
+        });
+    });
+}
+void MainWindow::renderHistory(bool preservePosition) {
+    auto *bar=m_messages->verticalScrollBar();
+    const bool layoutPending=m_scrollRestorePending;
+    const int oldPosition=layoutPending?m_scrollPosition:bar->value();
+    const bool bottom=!preservePosition || (layoutPending?m_scrollFollowBottom:bar->maximum()-oldPosition<24);
+    m_rebuildingMessages=true;
+    while (m_messageLayout->count()>1) {
+        auto *item=m_messageLayout->takeAt(0);delete item->widget();delete item;
+    }
     m_history->clear();
     for (auto v : m_node->history(m_current)) {
         auto r = v.toObject();
@@ -546,15 +708,18 @@ void MainWindow::renderHistory() {
 
     }
     if (m_demo) {
-        m_messages->append(
-            "<p style='color:#59a224'>研发电脑　10:25</p><p>这是 C++ / Qt 原生界面演示。</p><p "
-            "style='color:#0060a8'>我　10:26</p><p>单聊、讨论组、截图和文件传输都在会话中操作。☺</p>");
-        m_history->setPlainText("演示历史记录\n\n这是 C++ / Qt 原生界面演示。");
+        const auto now=double(QDateTime::currentSecsSinceEpoch());
+        appendMessage({{"direction","in"},{"text","下午好，新的聊天界面可以看一下吗？"},{"timestamp",now-120}});
+        appendMessage({{"direction","out"},{"text","可以。现在支持群聊、文件共享和截图发送。"},{"timestamp",now-90}});
+        appendMessage({{"direction","in"},{"text","收到 👍\n这些是界面演示消息，不会发送到网络。"},{"timestamp",now-60}});
+        appendMessage({{"direction","out"},{"text","表情和投屏入口也在输入框上方。"},{"timestamp",now}});
     }
     updateHistorySearch();
-    m_messages->verticalScrollBar()->setValue(m_messages->verticalScrollBar()->maximum());
+    m_rebuildingMessages=false;
+    restoreMessageScroll(oldPosition,bottom);
 }
 bool MainWindow::eventFilter(QObject *object, QEvent *event) {
+    if(object==m_messages->viewport() && (event->type()==QEvent::Wheel || event->type()==QEvent::KeyPress)) {++m_scrollGeneration;m_scrollRestorePending=false;}
     if (object == m_chat && event->type() == QEvent::WindowActivate && m_notifications && !m_chat->isMinimized()) m_notifications->markRead(m_current);
     if (object == m_editor && event->type() == QEvent::KeyPress) {
         auto *key = static_cast<QKeyEvent *>(event);
@@ -623,11 +788,16 @@ void MainWindow::chooseFont() {
     if (!ok)
         return;
     f.setPointSize(qBound(8, f.pointSize(), 24));
-    m_chatFont = f;
-    m_editor->setFont(f);
-    m_messages->setFont(f);
+    applyChatFont(f);
     m_settings.setValue("fontFamily", f.family());
     m_settings.setValue("fontSize", f.pointSize());
+}
+void MainWindow::applyChatFont(QFont f) {
+    auto *bar=m_messages->verticalScrollBar();const int oldPosition=bar->value();
+    const bool bottom=bar->maximum()-oldPosition<24;
+    m_chatFont=f;m_editor->setFont(f);
+    for(auto *text:m_messages->findChildren<QTextBrowser *>("messageText")) static_cast<MessageText *>(text)->applyFont(f);
+    restoreMessageScroll(oldPosition,bottom);
 }
 void MainWindow::captureScreenshot() {
     if (m_current.isEmpty()) {
