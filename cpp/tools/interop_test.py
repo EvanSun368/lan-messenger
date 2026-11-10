@@ -1,6 +1,6 @@
 """Actual Python 0.4 <-> C++ message, group, image and profile interoperability."""
-import argparse,json,pathlib,subprocess,sys,tempfile,time,threading
-parser=argparse.ArgumentParser();parser.add_argument('--peer',required=True);parser.add_argument('--python-root',required=True);a=parser.parse_args();sys.path.insert(0,a.python_root)
+import argparse,json,pathlib,subprocess,sys,tempfile,time,threading,os
+parser=argparse.ArgumentParser();parser.add_argument('--peer',required=True);parser.add_argument('--python-root',required=True);parser.add_argument('--qt-root');a=parser.parse_args();sys.path.insert(0,a.python_root)
 from lanlink.core import Node
 from PySide6.QtGui import QImage
 from PySide6.QtCore import QBuffer,QIODevice
@@ -12,7 +12,11 @@ def until(test):
         time.sleep(.03)
     raise AssertionError('Timed out')
 with tempfile.TemporaryDirectory() as root:
-    proc=subprocess.Popen([a.peer,root+'/cpp'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+    env=os.environ.copy()
+    if a.qt_root:
+        env['LD_LIBRARY_PATH']=a.qt_root+'/lib'
+        env['QT_PLUGIN_PATH']=a.qt_root+'/plugins'
+    proc=subprocess.Popen([a.peer,root+'/cpp'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,env=env)
     node=None
     try:
         info=json.loads(proc.stdout.readline());events=[]
