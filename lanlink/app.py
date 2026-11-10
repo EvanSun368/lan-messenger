@@ -695,8 +695,7 @@ class Window(QMainWindow):
         self.chat_dialog.close()
         self.tools_dialog.close()
         self.screen.stop()
-        if not self.demo:
-            self.node.stop()
+        self.node.stop()
         self.executor.shutdown(wait=False, cancel_futures=True)
         super().closeEvent(event)
 

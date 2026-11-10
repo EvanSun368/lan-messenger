@@ -122,3 +122,8 @@ class Node(ProfileMixin,MessagingMixin,FileServices):
         self.stop_messaging()
         if hasattr(self,'server'):self.server.close()
         if hasattr(self,'udp'):self.udp.close()
+        # Windows cannot remove a database while SQLite holds the file open.
+        # The retry worker is stopped before closing, and DB users share this lock.
+        with self.lock:
+            if not getattr(self,'db_closed',False):
+                self.db.close();self.db_closed=True

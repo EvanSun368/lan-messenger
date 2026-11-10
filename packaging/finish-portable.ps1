@@ -15,6 +15,7 @@ if ($p.ExitCode -ne 0 -or !(Test-Path $png) -or (Get-Item $png).Length -lt 1000)
 }
 Copy-Item $png (Join-Path $PWD 'dist\windows-startup-smoke.png')
 Copy-Item README.md,FILE_SHARING.md,SCREEN_SHARING.md,UI_REFERENCE.md $bundle
+if (Test-Path LANLINK.md) { Copy-Item LANLINK.md $bundle }
 Copy-Item packaging\WINDOWS.md (Join-Path $bundle 'WINDOWS-README.md')
 # Preserve the installed Qt binding's license texts in the distribution.
 $qt = '.venv-build\Lib\site-packages\PySide6'
