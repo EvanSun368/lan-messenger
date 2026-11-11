@@ -1,0 +1,83 @@
+/*
+Telegram Desktop original dialogs.style excerpts, GPL-3.0-or-later.
+Source: telegramdesktop/tdesktop c4bd064bcc84a359179e191fa6dfd216acda504f,
+Telegram/SourceFiles/dialogs/dialogs.style (dialogsMenuToggle, dialogsFilter).
+Only exported names are prefixed "lan" to avoid future linkage collisions.
+Original icons are consumed from the pinned upstream Resources, not redrawn.
+*/
+using "ui/widgets/widgets.style";
+
+lanDialogsMenuToggle: IconButton {
+	width: 40px;
+	height: 40px;
+
+	icon: icon {{ "dialogs/dialogs_menu", dialogsMenuIconFg }};
+	iconOver: icon {{ "dialogs/dialogs_menu", dialogsMenuIconFgOver }};
+	iconPosition: point(-1px, -1px);
+
+	rippleAreaPosition: point(0px, 0px);
+	rippleAreaSize: 40px;
+	ripple: defaultRippleAnimationBgOver;
+}
+
+lanDialogsFilter: InputField(defaultInputField) {
+	textBg: filterInputInactiveBg;
+	textBgActive: filterInputActiveBg;
+	textMargins: margins(12px, 8px, 30px, 5px);
+
+	placeholderFg: placeholderFg;
+	placeholderFgActive: placeholderFgActive;
+	placeholderFgError: placeholderFgActive;
+	placeholderMargins: margins(5px, 0px, 2px, 0px);
+	placeholderScale: 0.;
+	placeholderShift: -50px;
+	placeholderFont: normalFont;
+
+	borderFg: filterInputInactiveBg;
+	borderFgActive: windowBgRipple;
+	borderFgError: activeLineFgError;
+
+	border: 3px;
+	borderActive: 2px;
+	borderRadius: 18px;
+	borderDenominator: 2;
+
+	style: defaultTextStyle;
+
+	heightMin: 35px;
+}
+
+// Original info/info.style::topBarSearch; topBarHeight is 54px upstream.
+lanTopBarSearch: IconButton {
+ width: 40px;
+ height: 54px;
+ icon: icon {{ "top_bar_search", menuIconFg }};
+ iconOver: icon {{ "top_bar_search", menuIconFgOver }};
+ iconPosition: point(4px, 11px);
+ rippleAreaPosition: point(0px, 7px);
+ rippleAreaSize: 40px;
+ ripple: defaultRippleAnimationBgOver;
+}
+// Original chat_helpers.style::historyAttach, renamed only.
+lanHistoryAttach: IconButton(defaultIconButton) {
+ width: 44px;
+ height: 46px;
+ icon: icon {{ "chat/input_attach", historyComposeIconFg }};
+ iconOver: icon {{ "chat/input_attach", historyComposeIconFgOver }};
+ rippleAreaPosition: point(2px, 3px);
+ rippleAreaSize: 40px;
+ ripple: defaultRippleAnimationBgOver;
+}
+// Original historySend.inner IconButton visual; NOT the full SendButton class
+// (which also implements cloud paid-message/voice/scheduling modes).
+lanHistorySend: IconButton(lanHistoryAttach) {
+ icon: icon {{ "chat/input_send", historySendIconFg }};
+ iconOver: icon {{ "chat/input_send", historySendIconFgOver }};
+}
+
+// Original ui/chat/chat_style.style tail icons. Original PNG mask and horizontal
+// flip are consumed by codegen; only exported symbol names differ.
+lanHistoryBubbleTailInLeft: icon {{ "bubble_tail", msgInBg }};
+lanHistoryBubbleTailOutLeft: icon {{ "bubble_tail", msgOutBg }};
+lanHistoryBubbleTailInRight: icon {{ "bubble_tail-flip_horizontal", msgInBg }};
+lanHistoryBubbleTailOutRight: icon {{ "bubble_tail-flip_horizontal", msgOutBg }};

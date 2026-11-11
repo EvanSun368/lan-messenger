@@ -1,0 +1,19 @@
+********* Start testing of NetworkPolicyTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : NetworkPolicyTest::initTestCase()
+QWARN  : NetworkPolicyTest::realInterfaceEnumerationWhenAvailable() Could not create AF_NETLINK socket (Operation not permitted)
+SKIP   : NetworkPolicyTest::realInterfaceEnumerationWhenAvailable() This environment cannot enumerate a real loopback interface; transport tests use explicit interface fixtures
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_networkpolicy.cpp(39)]
+PASS   : NetworkPolicyTest::addressBoundariesAndExactAllowlist()
+PASS   : NetworkPolicyTest::legacyQueueMigratesWithoutChangingScope()
+PASS   : NetworkPolicyTest::configurationFailsClosedAndFixedPort()
+PASS   : NetworkPolicyTest::outgoingAndIncomingRejectUnapprovedAddress()
+PASS   : NetworkPolicyTest::chatFilesSharesAndScreenUseSamePolicy()
+PASS   : NetworkPolicyTest::activeDownloadStopsOnInterfaceLoss(ordinary-file)
+PASS   : NetworkPolicyTest::activeDownloadStopsOnInterfaceLoss(shared-file)
+PASS   : NetworkPolicyTest::revokedPolicyBlocksDirectFileAndScreenPaths()
+PASS   : NetworkPolicyTest::diagnosticsReportTimeoutWithoutRetryOrIdentityClaim()
+PASS   : NetworkPolicyTest::queuedMessageAndFileNeverFallbackAcrossRestart()
+PASS   : NetworkPolicyTest::cleanupTestCase()
+Totals: 12 passed, 0 failed, 1 skipped, 0 blacklisted, 2512ms
+********* Finished testing of NetworkPolicyTest *********

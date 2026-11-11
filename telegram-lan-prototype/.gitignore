@@ -1,0 +1,11 @@
+# Generated/downloaded dependencies and build products.
+upstream/
+**/build/
+**/build-*/
+**/__pycache__/
+*.zip
+*.key
+*.pem
+*.p12
+*.pfx
+application/tests/fixtures/mail-fixture.crt

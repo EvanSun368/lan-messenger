@@ -1,0 +1,8 @@
+PASS ['--vpn'] exit 2
+PASS ['--vpn-peer', '100.64.0.2'] exit 2
+PASS ['--vpn-interface', ''] exit 2
+PASS ['--vpn', '--vpn-interface', 'lo', '--vpn-address', '127.0.0.1', '--vpn-peer', '8.8.8.8'] exit 2
+PASS ['--vpn', '--vpn-interface', 'lo', '--vpn-address', '127.0.0.1', '--vpn-peer', '127.0.0.1', '--port', '0'] exit 2
+PASS ['--vpn', '--vpn-interface', 'lo', '--vpn-address', 'localhost', '--vpn-peer', '127.0.0.1'] exit 2
+PASS ['--help'] exit 0
+7/7 CLI checks passed; invalid requests never instantiate a window or listen.

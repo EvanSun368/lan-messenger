@@ -1,0 +1,236 @@
+[
+  {
+    "package": "gir1.2-freedesktop-dev",
+    "version": "1.84.0-1",
+    "url": "https://deb.debian.org/debian/pool/main/g/gobject-introspection/gir1.2-freedesktop-dev_1.84.0-1_amd64.deb",
+    "sha256": "268a900e9ac36b0967024e29148c500f276446660696445466fe7176206f2bd8",
+    "filename": "gir1.2-freedesktop-dev_1.84.0-1_amd64.deb"
+  },
+  {
+    "package": "gir1.2-glib-2.0-dev",
+    "version": "2.84.4-3~deb13u5",
+    "url": "https://deb.debian.org/debian/pool/main/g/glib2.0/gir1.2-glib-2.0-dev_2.84.4-3~deb13u5_amd64.deb",
+    "sha256": "3b49adb163111011070d713324c595d854d7b8b367b310ea92d80a5ab71cd663",
+    "filename": "gir1.2-glib-2.0-dev_2.84.4-3~deb13u5_amd64.deb"
+  },
+  {
+    "package": "gir1.2-glib-2.0",
+    "version": "2.84.4-3~deb13u5",
+    "url": "https://deb.debian.org/debian/pool/main/g/glib2.0/gir1.2-glib-2.0_2.84.4-3~deb13u5_amd64.deb",
+    "sha256": "90f674a980f28f0062cf7bf74a77a8dce728aa57d0915eb12c9cf6ea85ed774e",
+    "filename": "gir1.2-glib-2.0_2.84.4-3~deb13u5_amd64.deb"
+  },
+  {
+    "package": "girepository-tools",
+    "version": "2.84.4-3~deb13u5",
+    "url": "https://deb.debian.org/debian/pool/main/g/glib2.0/girepository-tools_2.84.4-3~deb13u5_amd64.deb",
+    "sha256": "2498e412b01d5d77049829d525b7ff559fd4be269a59cc4a50479337a50d8619",
+    "filename": "girepository-tools_2.84.4-3~deb13u5_amd64.deb"
+  },
+  {
+    "package": "gobject-introspection-bin",
+    "version": "1.84.0-1",
+    "url": "https://deb.debian.org/debian/pool/main/g/gobject-introspection/gobject-introspection-bin_1.84.0-1_amd64.deb",
+    "sha256": "89e5f6bbd4007b9c8df5af3147a42265fb273a0d8b61049836d71c4df364b404",
+    "filename": "gobject-introspection-bin_1.84.0-1_amd64.deb"
+  },
+  {
+    "package": "gobject-introspection",
+    "version": "1.84.0-1",
+    "url": "https://deb.debian.org/debian/pool/main/g/gobject-introspection/gobject-introspection_1.84.0-1_amd64.deb",
+    "sha256": "9fe3c65b35b574d2d742db556c8a403afa1f2022f37d8313f8176c539db8b035",
+    "filename": "gobject-introspection_1.84.0-1_amd64.deb"
+  },
+  {
+    "package": "libblkid-dev",
+    "version": "2.41.5-0+deb13u1",
+    "url": "https://deb.debian.org/debian/pool/main/u/util-linux/libblkid-dev_2.41.5-0+deb13u1_amd64.deb",
+    "sha256": "775bc91f7a265d21cdfc6b710813017b2366e5c5bb665cd2e6979af5dd8a03a8",
+    "filename": "libblkid-dev_2.41.5-0+deb13u1_amd64.deb"
+  },
+  {
+    "package": "libboost1.83-dev",
+    "version": "1.83.0-4.2",
+    "url": "https://deb.debian.org/debian/pool/main/b/boost1.83/libboost1.83-dev_1.83.0-4.2_amd64.deb",
+    "sha256": "1f11fc6fb2ffe9378a0f0ebc8f2fd9223fb958b4a40bb9381c67a8857d947ca3",
+    "filename": "libboost1.83-dev_1.83.0-4.2_amd64.deb"
+  },
+  {
+    "package": "libffi-dev",
+    "version": "3.4.8-2",
+    "url": "https://deb.debian.org/debian/pool/main/libf/libffi/libffi-dev_3.4.8-2_amd64.deb",
+    "sha256": "76b2b80193a656733e1408ebec5371334be5fd48eb5f50ab99d6baf6081d0f1b",
+    "filename": "libffi-dev_3.4.8-2_amd64.deb"
+  },
+  {
+    "package": "libgio-2.0-dev-bin",
+    "version": "2.84.4-3~deb13u5",
+    "url": "https://deb.debian.org/debian/pool/main/g/glib2.0/libgio-2.0-dev-bin_2.84.4-3~deb13u5_amd64.deb",
+    "sha256": "d43dddb9b306cb8427bd383e100b8510da8cfa03b5968624f3787bc66a5a95b8",
+    "filename": "libgio-2.0-dev-bin_2.84.4-3~deb13u5_amd64.deb"
+  },
+  {
+    "package": "libgio-2.0-dev",
+    "version": "2.84.4-3~deb13u5",
+    "url": "https://deb.debian.org/debian/pool/main/g/glib2.0/libgio-2.0-dev_2.84.4-3~deb13u5_amd64.deb",
+    "sha256": "a9bbd748ddd40a08b336e8d6b1755e698957ac640d081ddc4c330b716c6b89c3",
+    "filename": "libgio-2.0-dev_2.84.4-3~deb13u5_amd64.deb"
+  },
+  {
+    "package": "libgirepository-1.0-1",
+    "version": "1.84.0-1",
+    "url": "https://deb.debian.org/debian/pool/main/g/gobject-introspection/libgirepository-1.0-1_1.84.0-1_amd64.deb",
+    "sha256": "2168c5d833295d7cb298ce0161529932dc1cba5330c0d02e48bd0ae776fd2f79",
+    "filename": "libgirepository-1.0-1_1.84.0-1_amd64.deb"
+  },
+  {
+    "package": "libgirepository-1.0-dev",
+    "version": "1.84.0-1",
+    "url": "https://deb.debian.org/debian/pool/main/g/gobject-introspection/libgirepository-1.0-dev_1.84.0-1_amd64.deb",
+    "sha256": "f8b84778188ee4a87681986aadd4d928f45e443081667f46e5ba9acd0a800b83",
+    "filename": "libgirepository-1.0-dev_1.84.0-1_amd64.deb"
+  },
+  {
+    "package": "libglib2.0-dev-bin",
+    "version": "2.84.4-3~deb13u5",
+    "url": "https://deb.debian.org/debian/pool/main/g/glib2.0/libglib2.0-dev-bin_2.84.4-3~deb13u5_amd64.deb",
+    "sha256": "d35ef75a4b04ea10081d484e025b0a4fecd0232ffc0e76403bcd249b3b47e643",
+    "filename": "libglib2.0-dev-bin_2.84.4-3~deb13u5_amd64.deb"
+  },
+  {
+    "package": "libglib2.0-dev",
+    "version": "2.84.4-3~deb13u5",
+    "url": "https://deb.debian.org/debian/pool/main/g/glib2.0/libglib2.0-dev_2.84.4-3~deb13u5_amd64.deb",
+    "sha256": "ad98b1a769da55a8007ea9953306b0deb6092205d4fac8d915e2bd83d4ecc8a5",
+    "filename": "libglib2.0-dev_2.84.4-3~deb13u5_amd64.deb"
+  },
+  {
+    "package": "libjpeg62-turbo-dev",
+    "version": "1:2.1.5-4",
+    "url": "https://deb.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo-dev_2.1.5-4_amd64.deb",
+    "sha256": "e687e3c8b24a3aa74974928b8e0b07f6df2442187492d85cbcea7dacd91e3aba",
+    "filename": "libjpeg62-turbo-dev_2.1.5-4_amd64.deb"
+  },
+  {
+    "package": "liblz4-dev",
+    "version": "1.10.0-4",
+    "url": "https://deb.debian.org/debian/pool/main/l/lz4/liblz4-dev_1.10.0-4_amd64.deb",
+    "sha256": "b56779767ce81a4648f9b78a5ebce8264f14af2ac28dccd6896eb0402c685b2a",
+    "filename": "liblz4-dev_1.10.0-4_amd64.deb"
+  },
+  {
+    "package": "libmount-dev",
+    "version": "2.41.5-0+deb13u1",
+    "url": "https://deb.debian.org/debian/pool/main/u/util-linux/libmount-dev_2.41.5-0+deb13u1_amd64.deb",
+    "sha256": "2bef03b918e927648c6552143e17e82aa7ed2a4ce180fabd07a7d1cac7ff8686",
+    "filename": "libmount-dev_2.41.5-0+deb13u1_amd64.deb"
+  },
+  {
+    "package": "libpcre2-dev",
+    "version": "10.46-1~deb13u2",
+    "url": "https://deb.debian.org/debian/pool/main/p/pcre2/libpcre2-dev_10.46-1~deb13u2_amd64.deb",
+    "sha256": "f031c53b8f77c2825d9d6c71c0d8bd6106d6599af1655074b62074a10f7f7c6c",
+    "filename": "libpcre2-dev_10.46-1~deb13u2_amd64.deb"
+  },
+  {
+    "package": "libselinux1-dev",
+    "version": "3.8.1-1",
+    "url": "https://deb.debian.org/debian/pool/main/libs/libselinux/libselinux1-dev_3.8.1-1_amd64.deb",
+    "sha256": "0107595c65dd5cfe7ce3643d400e7b2be2c2528bcd110ad5af8605711a858921",
+    "filename": "libselinux1-dev_3.8.1-1_amd64.deb"
+  },
+  {
+    "package": "libsepol-dev",
+    "version": "3.8.1-1",
+    "url": "https://deb.debian.org/debian/pool/main/libs/libsepol/libsepol-dev_3.8.1-1_amd64.deb",
+    "sha256": "c085881d0546f6d539909f5710d7a3243aeb24338f6dc455b0ef6199f45bd753",
+    "filename": "libsepol-dev_3.8.1-1_amd64.deb"
+  },
+  {
+    "package": "libsysprof-capture-4-dev",
+    "version": "48.0-2",
+    "url": "https://deb.debian.org/debian/pool/main/s/sysprof/libsysprof-capture-4-dev_48.0-2_amd64.deb",
+    "sha256": "3cb76e124187700f5977a0acb914b3f82b2bd28105fce6f1cf2a34497b234af2",
+    "filename": "libsysprof-capture-4-dev_48.0-2_amd64.deb"
+  },
+  {
+    "package": "libvulkan-dev",
+    "version": "1.4.309.0-1",
+    "url": "https://deb.debian.org/debian/pool/main/v/vulkan-loader/libvulkan-dev_1.4.309.0-1_amd64.deb",
+    "sha256": "8d329d465e16168afff58b1bd0dd6db46aac2cc3f56054a481b25a04e90b345a",
+    "filename": "libvulkan-dev_1.4.309.0-1_amd64.deb"
+  },
+  {
+    "package": "libxkbcommon-dev",
+    "version": "1.7.0-2",
+    "url": "https://deb.debian.org/debian/pool/main/libx/libxkbcommon/libxkbcommon-dev_1.7.0-2_amd64.deb",
+    "sha256": "b62327152ae59bec442c0d7ae893520a3a3a2381100c83332e4a3497157ce5ec",
+    "filename": "libxkbcommon-dev_1.7.0-2_amd64.deb"
+  },
+  {
+    "package": "libxxhash-dev",
+    "version": "0.8.3-2",
+    "url": "https://deb.debian.org/debian/pool/main/x/xxhash/libxxhash-dev_0.8.3-2_amd64.deb",
+    "sha256": "c67517ebeb2f66cc4262dc476b4c7decc2b738a6d031e4869ca6bb726a75f645",
+    "filename": "libxxhash-dev_0.8.3-2_amd64.deb"
+  },
+  {
+    "package": "python3-mako",
+    "version": "1.3.9-1",
+    "url": "https://deb.debian.org/debian/pool/main/m/mako/python3-mako_1.3.9-1_all.deb",
+    "sha256": "03454643ca7c76ffda4a511228b86fee330e1dc9fc5bd9914afe7c5047b991ef",
+    "filename": "python3-mako_1.3.9-1_all.deb"
+  },
+  {
+    "package": "python3-markdown",
+    "version": "3.7-2+deb13u1",
+    "url": "https://deb.debian.org/debian/pool/main/p/python-markdown/python3-markdown_3.7-2+deb13u1_all.deb",
+    "sha256": "c28d02a2524dab9cc9528f0197a67a7526384f3621f79c9e099f9a498312638a",
+    "filename": "python3-markdown_3.7-2+deb13u1_all.deb"
+  },
+  {
+    "package": "python3-markupsafe",
+    "version": "2.1.5-1+b3",
+    "url": "https://deb.debian.org/debian/pool/main/m/markupsafe/python3-markupsafe_2.1.5-1+b3_amd64.deb",
+    "sha256": "f82dbd759e6b9c111dc764b3ce7744633d0c97948aaa77294984b80e9db44a24",
+    "filename": "python3-markupsafe_2.1.5-1+b3_amd64.deb"
+  },
+  {
+    "package": "python3-setuptools",
+    "version": "78.1.1-0.1",
+    "url": "https://deb.debian.org/debian/pool/main/s/setuptools/python3-setuptools_78.1.1-0.1_all.deb",
+    "sha256": "90c4bc8e311873e5b571b407ce6b1fd38195dff77f9de056301a0f950e6df5a5",
+    "filename": "python3-setuptools_78.1.1-0.1_all.deb"
+  },
+  {
+    "package": "uuid-dev",
+    "version": "2.41.5-0+deb13u1",
+    "url": "https://deb.debian.org/debian/pool/main/u/util-linux/uuid-dev_2.41.5-0+deb13u1_amd64.deb",
+    "sha256": "cb7d7db20e5d91193c2c6629a3f4aa917e3bc558c72b7f2db7203bcfa9a3ba1b",
+    "filename": "uuid-dev_2.41.5-0+deb13u1_amd64.deb"
+  },
+  {
+    "package": "libgl-dev",
+    "version": "1.7.0-3+b1",
+    "filename": "libgl-dev_1.7.0-3+b1_amd64.deb",
+    "url": "https://deb.debian.org/debian/pool/main/libg/libglvnd/libgl-dev_1.7.0-3+b1_amd64.deb",
+    "sha256": "ae05db54fc3a732ad2f223a497061798978956d3c808bf984a9cd6190b957428",
+    "verification": "local downloaded archive digest; fetched from official Debian, absent from newer package index"
+  },
+  {
+    "package": "libglx-dev",
+    "version": "1.7.0-3+b1",
+    "filename": "libglx-dev_1.7.0-3+b1_amd64.deb",
+    "url": "https://deb.debian.org/debian/pool/main/libg/libglvnd/libglx-dev_1.7.0-3+b1_amd64.deb",
+    "sha256": "745bfb52177d92b39dc89819112d181d21a635376ea8a7431cf2823d6249c33b",
+    "verification": "local downloaded archive digest; fetched from official Debian, absent from newer package index"
+  },
+  {
+    "package": "libopengl-dev",
+    "version": "1.7.0-3+b1",
+    "filename": "libopengl-dev_1.7.0-3+b1_amd64.deb",
+    "url": "https://deb.debian.org/debian/pool/main/libg/libglvnd/libopengl-dev_1.7.0-3+b1_amd64.deb",
+    "sha256": "2c56dd397d857b9fa1af5a509a32e6394c43b7389007c477fe0f7290dc854605",
+    "verification": "local downloaded archive digest; fetched from official Debian, absent from newer package index"
+  }
+]

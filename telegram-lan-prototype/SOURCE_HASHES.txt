@@ -1,0 +1,4 @@
+8aa4bfdcd3fe3cd48990738df7969b4caf5b93117afdc61301f92d90f417e881  telegram-lan-prototype/upstream/Telegram/SourceFiles/ui/chat/message_bubble.cpp
+024f1bd483d6970726270e28d7ee54a84145a8d2415e0e856de0069166027ebc  telegram-lan-prototype/prototype/vendor/telegram_bubble_geometry.h
+87ab94541bc1c5883e2b2ff6e2caf9d44c39e8cf394b6dbc84aac691fb1c427e  telegram-lan-prototype/prototype/backend/node.cpp
+b6852c0797af159a7b72a9e82ad6c376810137a26dee596c302178a98e35ce0e  telegram-lan-prototype/prototype/backend/node.h

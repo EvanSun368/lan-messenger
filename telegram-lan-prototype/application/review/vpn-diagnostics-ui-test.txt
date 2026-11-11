@@ -1,0 +1,16 @@
+********* Start testing of NetworkDiagnosticsUiTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : NetworkDiagnosticsUiTest::initTestCase()
+QWARN  : NetworkDiagnosticsUiTest::localStatusRefreshAndDemoCannotDial() Could not create AF_NETLINK socket (Operation not permitted)
+QWARN  : NetworkDiagnosticsUiTest::localStatusRefreshAndDemoCannotDial() This plugin does not support propagateSizeHints()
+QWARN  : NetworkDiagnosticsUiTest::localStatusRefreshAndDemoCannotDial() Could not create AF_NETLINK socket (Operation not permitted)
+PASS   : NetworkDiagnosticsUiTest::localStatusRefreshAndDemoCannotDial()
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() Could not create AF_NETLINK socket (Operation not permitted)
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() This plugin does not support propagateSizeHints()
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() This plugin does not support propagateSizeHints()
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() Could not create AF_NETLINK socket (Operation not permitted)
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() This plugin does not support propagateSizeHints()
+PASS   : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback()
+PASS   : NetworkDiagnosticsUiTest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 592ms
+********* Finished testing of NetworkDiagnosticsUiTest *********

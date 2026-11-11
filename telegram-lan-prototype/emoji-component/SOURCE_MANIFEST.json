@@ -1,0 +1,233 @@
+[
+  {
+    "file": "engine/emoji_suggestions.cpp",
+    "upstream": "lib_ui/emoji_suggestions/emoji_suggestions.cpp",
+    "commit": "42c6f1e88db81e6d9e8006f3e7b1c3ba39f9cac4",
+    "sha256": "f0d054158cec0b0150c8567fdcdfeed38efe61e797a5825d8b93e0fb69664e43",
+    "modified": false
+  },
+  {
+    "file": "engine/emoji_suggestions.h",
+    "upstream": "lib_ui/emoji_suggestions/emoji_suggestions.h",
+    "commit": "42c6f1e88db81e6d9e8006f3e7b1c3ba39f9cac4",
+    "sha256": "b9042f4c2a9fdcd2d37013fc9f025bdd04362774b70745913d1519c4381efe4d",
+    "modified": false
+  },
+  {
+    "file": "engine/emoji_suggestions_helper.h",
+    "upstream": "lib_ui/emoji_suggestions/emoji_suggestions_helper.h",
+    "commit": "42c6f1e88db81e6d9e8006f3e7b1c3ba39f9cac4",
+    "sha256": "72e53c7ac3e4bd6dfa0c5d75926c1efad1644201c39f5ee2d8353c4542ea8a91",
+    "modified": false
+  },
+  {
+    "file": "data/emoji.txt",
+    "upstream": "lib_ui/emoji.txt",
+    "commit": "42c6f1e88db81e6d9e8006f3e7b1c3ba39f9cac4",
+    "sha256": "bb5fa4b87d0bb499dc1e1a7c2c87f2e8ad05b06e5cab79ac882825fcad1ecb62",
+    "modified": false
+  },
+  {
+    "file": "data/emoji_autocomplete.json",
+    "upstream": "lib_ui/emoji_suggestions/emoji_autocomplete.json",
+    "commit": "42c6f1e88db81e6d9e8006f3e7b1c3ba39f9cac4",
+    "sha256": "e5c6077389fa9c433987edbd0e53f9c00963ee27662759aa8a27dd5326bbfcec",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/basic_tokenized_file.cpp",
+    "upstream": "codegen/codegen/common/basic_tokenized_file.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "58270a601a22ed5515beffed06c76055ea18227e7df730f2d6bb03f61506f676",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/logging.cpp",
+    "upstream": "codegen/codegen/common/logging.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "1e80b19e7e104563ca18908cc8fdbdca3fc768751f6f4e0093c489b345afc0e2",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/checked_utf8_string.cpp",
+    "upstream": "codegen/codegen/common/checked_utf8_string.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "582f9e7e0ce66b15cadaba0fd0887ea4f44ad3b32f51b9c93e90e552488224d0",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/checked_utf8_string.h",
+    "upstream": "codegen/codegen/common/checked_utf8_string.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "1add55a83520f17f402a0af534cede42a2edf301f0886be0a5450899fc371c48",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/const_utf8_string.h",
+    "upstream": "codegen/codegen/common/const_utf8_string.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "f2b627a6800263e1ee43e12c62a9010a34de68756a6e85fd98dd38c7fa0a7466",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/CMakeLists.txt",
+    "upstream": "codegen/codegen/common/CMakeLists.txt",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "d3adc11aedd5c2e1573a7e9bf09bbb1d7511e96153ed33ab01c8fe4290ead41c",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/clean_file_reader.h",
+    "upstream": "codegen/codegen/common/clean_file_reader.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "20095bd51a6df3e5479babb80234c6df57517ac544170085da6ec506e3d9765f",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/clean_file.h",
+    "upstream": "codegen/codegen/common/clean_file.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "e59e7f4faf5b5ae9c526294e87fcd86023e6e0e25c296b77a314041d13304e24",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/cpp_file.cpp",
+    "upstream": "codegen/codegen/common/cpp_file.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "8661ae5fa266f31c8b583eb9143f79d40e9634e5405200f7a74ed8eacc12d4d9",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/basic_tokenized_file.h",
+    "upstream": "codegen/codegen/common/basic_tokenized_file.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "8cedfe1d914878651494dbf08c9952dfcbea0a3cff3239d1df3a5790c2b43a5b",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/clean_file.cpp",
+    "upstream": "codegen/codegen/common/clean_file.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "efa4dde1a39fd3fb69eeb28db0646c0339f0d8c4d57e8781de14117b6d5fff9e",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/logging.h",
+    "upstream": "codegen/codegen/common/logging.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "c93511db606d291d7f5fb6846f60229f91cc5d8e3e9cf08b787b9a6a3e29ee89",
+    "modified": false
+  },
+  {
+    "file": "codegen/common/cpp_file.h",
+    "upstream": "codegen/codegen/common/cpp_file.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "2862dfa13bc614981e2f5f3d2fe56342a11139dab5110e986b6ab8c25cbafbf7",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/main.cpp",
+    "upstream": "codegen/codegen/emoji/main.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "16756d0f4c38e5343356b44e9e9786376aa2787e625e7f63129985872a474f52",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/options.h",
+    "upstream": "codegen/codegen/emoji/options.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "bc4262ac1865a3ee8b5b00c87220297bc3a26ec497b0c2032eedd3600ad27cd4",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/data.cpp",
+    "upstream": "codegen/codegen/emoji/data.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "7e59c1b76ad3e459494a194ca16bc24b856391d44b3e4619c4720a0b2c0220c4",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/data_read.h",
+    "upstream": "codegen/codegen/emoji/data_read.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "f7f82f81420b4ff543b30d89395a9da7dc051522564677ac34329258622c0697",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/data_old.cpp",
+    "upstream": "codegen/codegen/emoji/data_old.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "49f3fdb7789da6bf4e89d4972726ffe6dc3a3bef9315abcda9820ca29b3885ce",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/CMakeLists.txt",
+    "upstream": "codegen/codegen/emoji/CMakeLists.txt",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "740f844aa152a60afa2a35f4d9d815aba011ddc1fe8e94ae7d8aba1b296495b4",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/generator.cpp",
+    "upstream": "codegen/codegen/emoji/generator.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "dac05289e5d63b61cb1aeb7f149eab2e0e7921b4199cf96616342572bb685aed",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/options.cpp",
+    "upstream": "codegen/codegen/emoji/options.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "35aab15d8599e833b6d999844fec18416ee941063c20c60a43684a76bc5a611c",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/data_read.cpp",
+    "upstream": "codegen/codegen/emoji/data_read.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "22d6ccd56722a5186b3cbb5219141f7ebe7f78ca4d4a13a3c74957b3f62e390d",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/generator.h",
+    "upstream": "codegen/codegen/emoji/generator.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "f4cecb9b514163cdf19e31c6b4e333bbcbeec038b71d643a555b300feecbdbd9",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/data.h",
+    "upstream": "codegen/codegen/emoji/data.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "d69ad3b88a7970d8b941e5a510aed1aa604e4a2afd0d1c868d7a336c03ea9fbd",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/replaces.h",
+    "upstream": "codegen/codegen/emoji/replaces.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "731afb3fd9c68ce88c811f86cfba9272603303a64e849a9358a3db3b2675940c",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/replaces.cpp",
+    "upstream": "codegen/codegen/emoji/replaces.cpp",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "10e02292d90ba40130e31d2e4f4cea3468bf2bf18e116aaf32475ec0387d8c2b",
+    "modified": false
+  },
+  {
+    "file": "codegen/emoji/data_old.h",
+    "upstream": "codegen/codegen/emoji/data_old.h",
+    "commit": "dbd1d53137cd581cfdbeebe93bcaf54abf55ec74",
+    "sha256": "b6931aa41ffae385728a87783853e791ca497814b64dd2382b31b0575f338bf7",
+    "modified": false
+  },
+  {
+    "file": "base/qt/qt_string_view.h",
+    "upstream": "lib_base/base/qt/qt_string_view.h",
+    "commit": "42a0e5dd634e638de7115e5a4cfcdd72786853a3",
+    "sha256": "3d13310174141a37a94f41b1851ff347b58950f68ba4d9641870bfaef3a3c6e2",
+    "modified": false
+  }
+]
