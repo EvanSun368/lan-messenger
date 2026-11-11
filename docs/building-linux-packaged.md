@@ -112,5 +112,6 @@ LAN.
   art.
 - App ID `org.telegram.desktop` and window class `TelegramDesktop` are
   unchanged; the taskbar may still say TelegramDesktop.
-- `lan::Node` is POSIX-only (`sys/socket.h`). A Windows package needs a
-  Winsock port before it can link.
+- `lan::Node` has a Winsock port. Cross-compiling the full Windows GUI is
+  documented, including current blockers, in
+  [building-windows-mingw.md](building-windows-mingw.md).

@@ -1,5 +1,11 @@
 # Build instructions for Windows
 
+For this fork, a MinGW cross-compile of the LAN transport (`lan_node.exe`)
+and the current blockers for a full desktop GUI are documented in
+[building-windows-mingw.md](building-windows-mingw.md). The steps below are
+the official Visual Studio / MSVC path.
+
+
 - [Prepare folder](#prepare-folder)
 - [Install third party software](#install-third-party-software)
 - [Choose architecture and initialize terminal](#choose-architecture-and-initialize-terminal)
