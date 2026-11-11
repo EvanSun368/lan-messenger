@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "main/main_app_config.h"
+#include "lan/lan_mode.h"
 
 #include "api/api_authorizations.h"
 #include "apiwrap.h"
@@ -321,6 +322,9 @@ std::vector<int64> AppConfig::stakeDiceNanoTonSuggested() const {
 }
 
 void AppConfig::refresh(bool force) {
+	if (Lan::kServerless) {
+		return;
+	}
 	if (_requestId || !_api) {
 		if (force) {
 			_pendingRefresh = true;

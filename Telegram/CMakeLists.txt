@@ -128,6 +128,14 @@ if (NOT DESKTOP_APP_DISABLE_SWIFT6)
 endif()
 
 target_precompile_headers(Telegram PRIVATE $<$<COMPILE_LANGUAGE:CXX,OBJCXX>:${src_loc}/stdafx.h>)
+target_include_directories(Telegram PRIVATE ${src_loc}/lan)
+set_source_files_properties(
+    ${src_loc}/lan/identity.cpp
+    ${src_loc}/lan/protocol.cpp
+    ${src_loc}/lan/node.cpp
+    ${src_loc}/lan/lan_ids.cpp
+    PROPERTIES SKIP_PRECOMPILE_HEADERS ON
+)
 nice_target_sources(Telegram ${src_loc}
 PRIVATE
     ${style_files}
@@ -1515,6 +1523,17 @@ PRIVATE
     intro/intro_step.h
     intro/intro_widget.cpp
     intro/intro_widget.h
+    lan/bridge.cpp
+    lan/bridge.h
+    lan/identity.cpp
+    lan/identity.h
+    lan/lan_ids.cpp
+    lan/lan_ids.h
+    lan/lan_mode.h
+    lan/node.cpp
+    lan/node.h
+    lan/protocol.cpp
+    lan/protocol.h
     iv/iv_cached_media.cpp
     iv/iv_cached_media.h
     iv/editor/iv_editor_button_box.cpp

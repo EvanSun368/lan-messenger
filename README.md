@@ -7,32 +7,29 @@ This is a **serverless LAN / intranet messenger** forked from [Telegram Desktop]
 **本项目与 Telegram 官方无关，也不是官方客户端。**  
 **Not affiliated with Telegram. This is not the official Telegram Desktop client.**
 
-当前仓库的 `main` 基于官方 tdesktop 的 `dev` 分支，提交 `2b502b26e1b85b502df70c4c048f44f02657af75`（上游 Version 7.4.2）。原有的 LanLink Qt 代码已从 `main` 替换；如需找回，请使用备份标签 `archive/lanlink-0.6.1-pre-tdesktop`（指向 `26676c78a1204e080b8e196ffe678338c2a37c22`）：
-
-```bash
-git fetch origin tag archive/lanlink-0.6.1-pre-tdesktop
-git checkout archive/lanlink-0.6.1-pre-tdesktop
-```
+当前仓库基于官方 tdesktop 的 `dev` 分支，提交 `2b502b26e1b85b502df70c4c048f44f02657af75`（上游 Version 7.4.2）。原有的独立 Qt 客户端代码已从 `main` 替换。
 
 上游许可证仍是 GPLv3（含 OpenSSL 例外）。请保留 [LICENSE](LICENSE) 与 [LEGAL](LEGAL)。
 
 ## 现在实际做到哪一步 / What works today
 
-已经落地并可测试的是无服务器传输层，位于 [`Telegram/SourceFiles/lan/`](Telegram/SourceFiles/lan/)：
+已经落地并可测试的包括无服务器传输层，以及把它接到官方界面会话层的第一刀，代码在 [`Telegram/SourceFiles/lan/`](Telegram/SourceFiles/lan/)：
 
 - 本地身份：随机 `peer_id` + 本机保存的显示名，不需要手机号或 Telegram 账号
 - 局域网发现：默认 UDP 组播 `239.255.87.42:48710`（TTL 1）；组播被过滤时可用单播 `target`
 - 点对点 TCP 文本消息，带确认
 - 单元测试，以及同一台机器上两个 `lan_node` 进程互发文本的冒烟测试
+- **界面挂钩：** 启动页改为本地显示名（标题为 LanLink，不再走手机号 / 二维码登录）；发现到的对等端进入会话列表；文字收发走 `lan::Node`，不再登录 Telegram 云。CMake 选项 `LANLINK_SERVERLESS` 默认开启，官方 `api_id` / `api_hash` 不再是配置构建的前提。
 
 **尚未完成的部分（请勿误解）：**
 
-- **官方 tdesktop 界面还没有接上这条局域网通道。** 若按上游方式直接编译桌面客户端，得到的仍是会登录 Telegram 云的官方路径，请不要把它当成已经可用的内网工具。
+- 本环境还没有产出完整的 tdesktop Linux/Windows 桌面二进制。按上游文档编译前请先初始化子模块；详见 [docs/lan-serverless.md](docs/lan-serverless.md)。
+- `lan::Node` 目前是 POSIX 套接字实现，Windows 桌面构建还需要先做 Winsock 移植。
 - 文件发送、语音/视频通话、群组、频道等还没有在局域网路径上实现。
 - 当前局域网传输是明文，只适合受信任的内网。
-- 本环境没有做完整的 tdesktop Linux/Windows 桌面构建（官方桌面构建依赖多、耗时长）。
+- 绑定仅 `127.0.0.1` 时组播发现不可靠；回环冒烟测试使用单播 `target`。真实局域网请绑定 `0.0.0.0`。
 
-下一步如何接到会话列表和聊天窗口，见 [docs/lan-serverless.md](docs/lan-serverless.md)。
+挂钩细节见 [docs/lan-serverless.md](docs/lan-serverless.md)。
 
 ## 先试用局域网文本通道 / Try the LAN text path
 
@@ -64,7 +61,7 @@ c++ -std=c++17 -O2 -I. -o lan_node lan_cli.cpp identity.cpp protocol.cpp node.cp
 
 ## 如何编译完整的桌面客户端 / Building the desktop app
 
-完整界面仍按上游文档构建（当前尚未切换到局域网模式）：
+完整桌面客户端仍按上游文档构建。此 fork 默认编译为局域网模式（`LANLINK_SERVERLESS=ON`），启动后不应再登录 Telegram 云：
 
 - [Windows](docs/building-win.md)
 - [macOS](docs/building-mac.md)

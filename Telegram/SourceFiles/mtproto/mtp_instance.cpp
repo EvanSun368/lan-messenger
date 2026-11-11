@@ -384,14 +384,16 @@ void Instance::Private::start() {
 		for (const auto &[shiftedDcId, dc] : _dcenters) {
 			startSession(shiftedDcId);
 		}
-	} else if (hasMainDcId()) {
-		_mainSession = startSession(mainDcId());
 	}
 
 	_checkDelayedTimer.setCallback([this] { checkDelayedRequests(); });
 
-	Assert(!hasMainDcId() == isKeysDestroyer());
-	requestConfig();
+	// LanLink: do not start an MTP session or fetch official config.
+	// hasMainDcId() stays true so existing session-layer asserts hold,
+	// but no socket is opened toward Telegram DCs.
+	if (!isKeysDestroyer()) {
+		Assert(hasMainDcId());
+	}
 }
 
 void Instance::Private::resolveProxyDomain(const QString &host) {
@@ -518,6 +520,8 @@ rpl::producer<DcId> Instance::Private::mainDcIdValue() const {
 }
 
 void Instance::Private::requestConfig() {
+	// LanLink: never contact official help.getConfig.
+#if 0
 	if (_configLoader || isKeysDestroyer()) {
 		return;
 	}
@@ -530,6 +534,7 @@ void Instance::Private::requestConfig() {
 		},
 		_proxySettings.isEnabled());
 	_configLoader->load();
+#endif // LanLink disables official config load
 }
 
 void Instance::Private::setUserPhone(const QString &phone) {
@@ -542,9 +547,8 @@ void Instance::Private::setUserPhone(const QString &phone) {
 }
 
 void Instance::Private::badConfigurationError(const ProxyData &proxy) {
-	if (_mode == Mode::Normal) {
-		Core::App().badMtprotoConfigurationError(proxy);
-	}
+	// LanLink: no official DCs, so a missing configuration is expected.
+	(void)proxy;
 }
 
 void Instance::Private::syncHttpUnixtime() {
@@ -1026,6 +1030,17 @@ void Instance::Private::sendRequest(
 		crl::time msCanWait,
 		bool needsLayer,
 		mtpRequestId afterRequestId) {
+	// LanLink: drop unused MTP requests so they cannot open sockets
+	// toward Telegram. Callbacks are discarded (callers must not depend
+	// on official replies).
+	(void)requestId;
+	(void)request;
+	(void)callbacks;
+	(void)shiftedDcId;
+	(void)msCanWait;
+	(void)needsLayer;
+	(void)afterRequestId;
+#if 0
 	const auto session = getSession(shiftedDcId);
 
 	request->requestId = requestId;
@@ -1056,6 +1071,7 @@ void Instance::Private::sendRequest(
 	}
 
 	session->sendPrepared(request, msCanWait);
+#endif // LanLink disables official MTP send
 }
 
 void Instance::Private::registerRequest(

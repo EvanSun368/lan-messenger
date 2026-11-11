@@ -10,9 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "intro/intro_step.h"
 
 namespace Ui {
-class FlatLabel;
-class LinkButton;
-class RoundButton;
+class InputField;
 } // namespace Ui
 
 namespace Intro {
@@ -31,7 +29,13 @@ public:
 	void activate() override;
 	void setInnerFocus() override;
 
+protected:
+	void resizeEvent(QResizeEvent *e) override;
+
 private:
+	void updateControlsGeometry();
+
+	object_ptr<Ui::InputField> _name;
 	rpl::event_stream<> _nextButtonFocusRequests;
 
 };

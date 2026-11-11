@@ -169,31 +169,12 @@ void DcOptions::constructFromBuiltIn() {
 
 	readBuiltInPublicKeys();
 
-	const auto list = isTestMode()
-		? gsl::make_span(kBuiltInDcsTest)
-		: gsl::make_span(kBuiltInDcs).subspan(0);
-	for (const auto &entry : list) {
-		const auto flags = Flag::f_static | 0;
-		applyOneGuarded(entry.id, flags, entry.ip, entry.port, {});
-		DEBUG_LOG(("MTP Info: adding built in DC %1 connect option: %2:%3"
-			).arg(entry.id
-			).arg(entry.ip
-			).arg(entry.port));
-	}
-
-	const auto listv6 = isTestMode()
-		? gsl::make_span(kBuiltInDcsIPv6Test)
-		: gsl::make_span(kBuiltInDcsIPv6).subspan(0);
-	for (const auto &entry : listv6) {
-		const auto flags = Flag::f_static | Flag::f_ipv6;
-		applyOneGuarded(entry.id, flags, entry.ip, entry.port, {});
-		DEBUG_LOG(("MTP Info: adding built in DC %1 IPv6 connect option: "
-			"%2:%3"
-			).arg(entry.id
-			).arg(entry.ip
-			).arg(entry.port));
-	}
+	// LanLink is a serverless LAN messenger. Do not install official
+	// Telegram production or test DC addresses. A stock build of this
+	// fork must not open connections to 149.154.*.* or similar.
+	DEBUG_LOG(("LanLink: skipping built-in Telegram DC endpoints."));
 }
+
 
 void DcOptions::processFromList(
 		const QVector<MTPDcOption> &options,

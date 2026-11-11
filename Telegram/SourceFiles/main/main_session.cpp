@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "main/main_session.h"
+#include "lan/lan_mode.h"
 
 #include "apiwrap.h"
 #include "api/api_peer_colors.h"
@@ -188,8 +189,10 @@ Session::Session(
 , _saveSettingsTimer([=] { saveSettings(); }) {
 	Expects(_settings != nullptr);
 
-	_api->requestTermsUpdate();
-	_api->requestFullPeer(_user);
+	if (!Lan::kServerless) {
+		_api->requestTermsUpdate();
+		_api->requestFullPeer(_user);
+	}
 
 	_api->instance().setUserPhone(_user->phone());
 
@@ -219,7 +222,7 @@ Session::Session(
 			if (update.flags & Flag::PhoneNumber) {
 				const auto phone = _user->phone();
 				_api->instance().setUserPhone(phone);
-				if (!phone.isEmpty()) {
+				if (!phone.isEmpty() && !Lan::kServerless) {
 					_api->instance().requestConfig();
 				}
 			}
@@ -268,9 +271,11 @@ Session::Session(
 	Spellchecker::Start(this);
 #endif // TDESKTOP_DISABLE_SPELLCHECK
 
-	_api->requestNotifySettings(MTP_inputNotifyUsers());
-	_api->requestNotifySettings(MTP_inputNotifyChats());
-	_api->requestNotifySettings(MTP_inputNotifyBroadcasts());
+	if (!Lan::kServerless) {
+		_api->requestNotifySettings(MTP_inputNotifyUsers());
+		_api->requestNotifySettings(MTP_inputNotifyChats());
+		_api->requestNotifySettings(MTP_inputNotifyBroadcasts());
+	}
 
 	Core::App().downloadManager().trackSession(this);
 	Tgw::StartStorage(this);

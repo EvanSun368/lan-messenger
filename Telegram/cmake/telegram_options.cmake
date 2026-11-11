@@ -6,12 +6,25 @@
 
 option(TDESKTOP_API_TEST "Use test API credentials." OFF)
 option(TDESKTOP_BUILD_UPDATE_TESTS "Build the focused update verification test." OFF)
+option(LANLINK_SERVERLESS "Serverless LAN messenger (do not use Telegram cloud)." ON)
 set(TDESKTOP_API_ID "0" CACHE STRING "Provide 'api_id' for the Telegram API access.")
 set(TDESKTOP_API_HASH "" CACHE STRING "Provide 'api_hash' for the Telegram API access.")
 
 if (TDESKTOP_API_TEST)
     set(TDESKTOP_API_ID 17349)
     set(TDESKTOP_API_HASH 344583e45741c457fe1862106095a5eb)
+endif()
+
+# This fork does not talk to Telegram. Dummy credentials satisfy the
+# upstream CMake requirement so a stock configure does not ask for
+# official api_id / api_hash.
+if (LANLINK_SERVERLESS AND (TDESKTOP_API_ID STREQUAL "0" OR TDESKTOP_API_HASH STREQUAL ""))
+    set(TDESKTOP_API_ID "1")
+    set(TDESKTOP_API_HASH "lanlink_unused")
+endif()
+
+if (LANLINK_SERVERLESS)
+    target_compile_definitions(Telegram PRIVATE LANLINK_SERVERLESS)
 endif()
 
 if (TDESKTOP_API_ID STREQUAL "0" OR TDESKTOP_API_HASH STREQUAL "")
