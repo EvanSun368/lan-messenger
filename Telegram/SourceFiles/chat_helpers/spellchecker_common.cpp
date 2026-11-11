@@ -673,6 +673,10 @@ std::vector<int> DefaultLanguages() {
 }
 
 void Start(not_null<Main::Session*> session) {
+#ifdef LANLINK_TRIM_CLOUD
+	(void)session;
+	return;
+#endif
 	Spellchecker::SetPhrases({ {
 		{ &ph::lng_spellchecker_submenu, tr::lng_spellchecker_submenu() },
 		{ &ph::lng_spellchecker_add, tr::lng_spellchecker_add() },

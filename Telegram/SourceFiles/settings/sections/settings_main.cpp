@@ -371,8 +371,12 @@ void BuildSectionButtons(SectionBuilder &builder) {
 			.title = tr::lng_settings_my_account(),
 			.icon = { &st::menuIconProfile },
 			.onClick = [=] {
+#ifdef LANLINK_TRIM_CLOUD
+				showOther(InformationId());
+#else
 				controller->showSection(
 					Info::Stories::MakeMyProfile(session->user()));
+#endif
 			},
 			.keywords = { u"profile"_q, u"edit"_q, u"information"_q },
 		});
@@ -695,12 +699,16 @@ rpl::producer<QString> Main::title() {
 
 void Main::fillTopBarMenu(const Ui::Menu::MenuCallback &addAction) {
 	const auto &list = Core::App().domain().accounts();
+#ifndef LANLINK_TRIM_CLOUD
 	if (list.size() < Core::App().domain().maxAccounts()) {
 		addAction(tr::lng_menu_add_account(tr::now), [=] {
 			Core::App().setActivePrimaryWindow(&controller()->window());
 			Core::App().domain().addActivated(MTP::Environment{});
 		}, &st::menuIconAddAccount);
 	}
+#else
+	(void)list;
+#endif
 	if (!controller()->session().supportMode()) {
 		addAction(
 			tr::lng_settings_information(tr::now),
@@ -758,7 +766,9 @@ void Main::setupContent() {
 		BuildSectionButtons(builder);
 		builder.addSkip();
 		BuildInterfaceScale(builder);
+#ifndef LANLINK_TRIM_CLOUD
 		BuildPremiumSection(builder);
+#endif
 		BuildHelpSection(builder);
 
 		std::move(showFinished) | rpl::on_next([=] {
@@ -833,7 +843,9 @@ const auto kMeta = BuildHelper({
 	builder.addSkip();
 
 	BuildInterfaceScale(builder);
+	#ifndef LANLINK_TRIM_CLOUD
 	BuildPremiumSection(builder);
+	#endif
 	BuildHelpSection(builder);
 });
 

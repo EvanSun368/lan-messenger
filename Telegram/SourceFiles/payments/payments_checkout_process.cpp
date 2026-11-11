@@ -69,6 +69,9 @@ void CheckoutProcess::Start(
 		Mode mode,
 		Fn<void(CheckoutResult)> reactivate,
 		Fn<void(NonPanelPaymentForm)> nonPanelPaymentFormProcess) {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	auto &processes = LookupSessionProcesses(&item->history()->session());
 	const auto media = item->media();
 	const auto invoice = media ? media->invoice() : nullptr;
@@ -108,6 +111,9 @@ void CheckoutProcess::Start(
 		const QString &slug,
 		Fn<void(CheckoutResult)> reactivate,
 		Fn<void(NonPanelPaymentForm)> nonPanelPaymentFormProcess) {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	auto &processes = LookupSessionProcesses(session);
 	const auto i = processes.bySlug.find(slug);
 	if (i != end(processes.bySlug)) {
@@ -132,6 +138,9 @@ void CheckoutProcess::Start(
 		InvoicePremiumGiftCode giftCodeInvoice,
 		Fn<void(CheckoutResult)> reactivate,
 		Fn<void(NonPanelPaymentForm)> nonPanelPaymentFormProcess) {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	const auto randomId = giftCodeInvoice.randomId;
 	auto id = InvoiceId{ std::move(giftCodeInvoice) };
 	auto &processes = LookupSessionProcesses(SessionFromId(id));
@@ -157,6 +166,9 @@ void CheckoutProcess::Start(
 void CheckoutProcess::Start(
 		InvoiceCredits creditsInvoice,
 		Fn<void(CheckoutResult)> reactivate) {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	const auto randomId = creditsInvoice.randomId;
 	auto id = InvoiceId{ std::move(creditsInvoice) };
 	auto &processes = LookupSessionProcesses(SessionFromId(id));
@@ -181,6 +193,9 @@ void CheckoutProcess::Start(
 		InvoiceStarGift giftInvoice,
 		Fn<void(CheckoutResult)> reactivate,
 		Fn<void(NonPanelPaymentForm)> nonPanelPaymentFormProcess) {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	const auto randomId = giftInvoice.randomId;
 	auto id = InvoiceId{ std::move(giftInvoice) };
 	auto &processes = LookupSessionProcesses(SessionFromId(id));

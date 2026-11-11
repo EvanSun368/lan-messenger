@@ -999,6 +999,9 @@ WebViewSource WebViewInstance::source() const {
 }
 
 void WebViewInstance::activate() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	if (_panel) {
 		_panel->requestActivate();
 	} else {
@@ -1027,6 +1030,9 @@ void WebViewInstance::requestFullBot() {
 }
 
 void WebViewInstance::resolve() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	requestFullBot();
 	v::match(_source, [&](WebViewSourceButton data) {
 		confirmOpen([=] {
@@ -1467,6 +1473,9 @@ void WebViewInstance::maybeChooseAndRequestButton(PeerTypes supported) {
 }
 
 void WebViewInstance::show(ShowArgs &&args) {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	if (!_bot->isFullLoaded()) {
 		_botFullWaitingArgs.emplace(std::move(args));
 		return;
@@ -1538,6 +1547,9 @@ void WebViewInstance::show(ShowArgs &&args) {
 }
 
 void WebViewInstance::showGame() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	Expects(v::is<WebViewSourceGame>(_source));
 
 	if (!_bot->isFullLoaded()) {

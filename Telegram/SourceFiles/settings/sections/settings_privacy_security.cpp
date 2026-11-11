@@ -632,6 +632,7 @@ void BuildSecuritySection(
 	});
 
 	if (session->passkeys().possible()) {
+#ifndef LANLINK_TRIM_CLOUD
 		auto passkeysLabel = rpl::combine(
 			tr::lng_profile_loading(),
 			(rpl::single(rpl::empty_value())
@@ -680,6 +681,7 @@ void BuildSecuritySection(
 			.keywords = { u"passkeys"_q, u"biometric"_q },
 			.shown = std::move(passkeysShown),
 		});
+#endif
 	}
 
 	{

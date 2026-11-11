@@ -700,6 +700,9 @@ void Instance::showOpenedPage(
 		not_null<Data*> data,
 		QString hash,
 		bool requestFullOnOpen) {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	if (Platform::IsMac()) {
 		// Otherwise IV is not visible under the media viewer.
 		Core::App().hideMediaView();

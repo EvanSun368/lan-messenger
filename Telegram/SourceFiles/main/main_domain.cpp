@@ -612,6 +612,9 @@ void Domain::scheduleWriteAccounts() {
 }
 
 int Domain::maxAccounts() const {
+#ifdef LANLINK_TRIM_CLOUD
+	return 1;
+#else
 	const auto premiumCount = ranges::count_if(accounts(), [](
 			const Main::Domain::AccountWithIndex &d) {
 		return d.account->sessionExists()
@@ -619,6 +622,7 @@ int Domain::maxAccounts() const {
 				|| d.account->session().isTestMode());
 	});
 	return std::min(int(premiumCount) + kMaxAccounts, kPremiumMaxAccounts);
+#endif
 }
 
 rpl::producer<int> Domain::maxAccountsChanges() const {

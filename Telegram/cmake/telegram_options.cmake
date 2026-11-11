@@ -142,3 +142,28 @@ endif()
 if (DESKTOP_APP_DISABLE_WALLET)
     target_compile_definitions(Telegram PRIVATE DESKTOP_APP_DISABLE_WALLET)
 endif()
+
+# Official Telegram cloud features that a serverless LAN messenger does not use.
+# Default ON; leftover widgets may still compile, but entry points are cut.
+option(LANLINK_TRIM_CLOUD
+    "Cut official cloud features (MTProto login, payments, stories, webview, ...)."
+    ON)
+if (LANLINK_TRIM_CLOUD)
+    target_compile_definitions(Telegram PRIVATE
+        LANLINK_TRIM_CLOUD
+        LANLINK_DISABLE_MULTI_ACCOUNT
+        LANLINK_DISABLE_PAYMENTS
+        LANLINK_DISABLE_PASSPORT
+        LANLINK_DISABLE_PREMIUM
+        LANLINK_DISABLE_WEBVIEW
+        LANLINK_DISABLE_IV
+        LANLINK_DISABLE_INLINE_BOTS
+        LANLINK_DISABLE_STORIES
+        LANLINK_DISABLE_STATISTICS
+        LANLINK_DISABLE_EXPORT
+        LANLINK_DISABLE_TRANSLATE
+        LANLINK_DISABLE_SPELLCHECK
+        LANLINK_DISABLE_QR_LOGIN
+        LANLINK_DISABLE_WEBAUTHN
+    )
+endif()
