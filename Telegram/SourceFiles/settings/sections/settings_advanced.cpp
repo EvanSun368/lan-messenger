@@ -654,8 +654,8 @@ void BuildSystemIntegrationSection(SectionBuilder &builder) {
 		.checked = settings->closeBehavior() == Behavior::CloseToTaskbar,
 		.keywords = { u"close"_q, u"taskbar"_q, u"minimize"_q },
 		.shown = closeToTaskbarShown
-			? closeToTaskbarShown->value()
-			: rpl::single(false),
+			? closeToTaskbarShown->value() | rpl::type_erased
+			: rpl::single(false) | rpl::type_erased,
 	});
 	if (closeToTaskbar) {
 		closeToTaskbar->checkedChanges(

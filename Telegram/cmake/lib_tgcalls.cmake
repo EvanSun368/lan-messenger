@@ -4,6 +4,22 @@
 # For license and copyright information please follow this link:
 # https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
+if (LANLINK_DISABLE_CALLS)
+    add_library(lib_tgcalls STATIC)
+    init_target(lib_tgcalls)
+    add_library(tdesktop::lib_tgcalls ALIAS lib_tgcalls)
+    # Empty placeholder so Telegram still links tdesktop::lib_tgcalls.
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/lanlink_tgcalls_stub.cpp" "namespace tgcalls {}
+")
+    target_sources(lib_tgcalls PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/lanlink_tgcalls_stub.cpp")
+else()
+
+# This file is part of Telegram Desktop,
+# the official desktop application for the Telegram messaging service.
+#
+# For license and copyright information please follow this link:
+# https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
+
 add_library(lib_tgcalls STATIC)
 init_target(lib_tgcalls) # Can't use std::optional::value on macOS.
 
@@ -283,3 +299,5 @@ PUBLIC
 PRIVATE
     ${tgcalls_loc}
 )
+
+endif()

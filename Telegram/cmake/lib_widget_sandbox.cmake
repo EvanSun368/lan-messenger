@@ -78,9 +78,20 @@ if (WIN32)
     nice_target_sources(lib_widget_sandbox ${widget_sandbox_loc}
     PRIVATE
         include/twidget/icu_intl.h
-        src/icu_intl.cpp
     )
-    target_link_libraries(lib_widget_sandbox PUBLIC bcrypt icu)
+    if (MSVC)
+        nice_target_sources(lib_widget_sandbox ${widget_sandbox_loc}
+        PRIVATE
+            src/icu_intl.cpp
+        )
+        target_link_libraries(lib_widget_sandbox PUBLIC bcrypt icu)
+    else()
+        # MinGW has no Windows SDK icu.h; the official source talks to icu.dll
+        # through that header. BasicIntl is enough for LAN builds.
+        get_filename_component(_lan_stubs "${CMAKE_SOURCE_DIR}/Telegram/SourceFiles/lan/stubs" REALPATH)
+        target_sources(lib_widget_sandbox PRIVATE ${_lan_stubs}/icu_intl_mingw_stub.cpp)
+        target_link_libraries(lib_widget_sandbox PUBLIC bcrypt)
+    endif()
 endif()
 
 if (MSVC)

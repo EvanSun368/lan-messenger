@@ -1,0 +1,125 @@
+diff --git a/external/pango/CMakeLists.txt b/external/pango/CMakeLists.txt
+index 25c56c1..a2176df 100644
+--- a/external/pango/CMakeLists.txt
++++ b/external/pango/CMakeLists.txt
+@@ -16,3 +16,19 @@ INTERFACE
+     PkgConfig::DESKTOP_APP_PANGOCAIRO
+     $<TARGET_NAME_IF_EXISTS:PkgConfig::DESKTOP_APP_PANGOFT2>
+ )
++
++# pkg-config IMPORTED_TARGET may inject /usr/include as a SYSTEM include.
++# GCC then fails on <cmath>'s `#include_next <math.h>` when compiling
++# text_shaper_pango.cpp (seen with Debian 13 + GCC 14 + packaged Qt).
++# /usr/include is already in the compiler's default search path.
++foreach(_tgt PkgConfig::DESKTOP_APP_PANGOCAIRO PkgConfig::DESKTOP_APP_PANGOFT2)
++    if (TARGET ${_tgt})
++        foreach(_prop INTERFACE_INCLUDE_DIRECTORIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
++            get_target_property(_incs ${_tgt} ${_prop})
++            if (_incs)
++                list(REMOVE_ITEM _incs "/usr/include")
++                set_property(TARGET ${_tgt} PROPERTY ${_prop} "${_incs}")
++            endif()
++        endforeach()
++    endif()
++endforeach()
+diff --git a/external/tlottie/CMakeLists.txt b/external/tlottie/CMakeLists.txt
+index 0d3714c..08f8aaa 100644
+--- a/external/tlottie/CMakeLists.txt
++++ b/external/tlottie/CMakeLists.txt
+@@ -29,3 +29,17 @@ target_link_libraries(external_tlottie
+ INTERFACE
+     $<TARGET_NAME_IF_EXISTS:desktop-app::external_tdesktop_rust>
+ )
++
++if (WIN32)
++    # libtlottie.a is a Rust staticlib (windows-gnu). These are rustc --print native-static-libs.
++    target_link_libraries(external_tlottie
++    INTERFACE
++        kernel32
++        ntdll
++        userenv
++        ws2_32
++        dbghelp
++        bcrypt
++        advapi32
++    )
++endif()
+diff --git a/external/wallet_engine/CMakeLists.txt b/external/wallet_engine/CMakeLists.txt
+index c73fab4..e9ab292 100644
+--- a/external/wallet_engine/CMakeLists.txt
++++ b/external/wallet_engine/CMakeLists.txt
+@@ -9,7 +9,17 @@ add_library(desktop-app::external_wallet_engine ALIAS external_wallet_engine)
+ 
+ init_target(external_wallet_engine "(external)")
+ 
+-if (DESKTOP_APP_USE_PACKAGED OR LINUX)
++if (DESKTOP_APP_DISABLE_WALLET)
++    find_path(DESKTOP_APP_WALLET_ENGINE_INCLUDE_DIR wallet_engine.hpp PATH_SUFFIXES wallet_engine REQUIRED)
++    set(wallet_engine_include "${DESKTOP_APP_WALLET_ENGINE_INCLUDE_DIR}")
++    set(wallet_engine_source "${DESKTOP_APP_WALLET_ENGINE_INCLUDE_DIR}/wallet_engine.cpp")
++    # UniFFI C++ bindings stay; the Rust staticlib is replaced by a checksum-compatible FFI stub.
++    get_filename_component(_lan_stubs "${CMAKE_SOURCE_DIR}/Telegram/SourceFiles/lan/stubs" REALPATH)
++    if (NOT EXISTS "${_lan_stubs}/wallet_engine_ffi_stub.cpp")
++        set(_lan_stubs "${CMAKE_CURRENT_SOURCE_DIR}/../../../Telegram/SourceFiles/lan/stubs")
++    endif()
++    target_sources(external_wallet_engine PRIVATE "${_lan_stubs}/wallet_engine_ffi_stub.cpp")
++elseif (DESKTOP_APP_USE_PACKAGED OR LINUX)
+     if (NOT TARGET desktop-app::external_tdesktop_rust)
+         find_library(DESKTOP_APP_WALLET_ENGINE_LIBRARY wallet_engine REQUIRED)
+         target_link_libraries(external_wallet_engine PUBLIC "${DESKTOP_APP_WALLET_ENGINE_LIBRARY}")
+diff --git a/external/webrtc/CMakeLists.txt b/external/webrtc/CMakeLists.txt
+index c4a0530..85bf0f6 100644
+--- a/external/webrtc/CMakeLists.txt
++++ b/external/webrtc/CMakeLists.txt
+@@ -7,6 +7,12 @@
+ add_library(external_webrtc INTERFACE IMPORTED GLOBAL)
+ add_library(desktop-app::external_webrtc ALIAS external_webrtc)
+ 
++if (LANLINK_DISABLE_CALLS)
++    # No tg_owt. lib_webrtc / lib_tgcalls use stubs instead of WebRTC.
++    target_compile_definitions(external_webrtc INTERFACE LANLINK_DISABLE_CALLS WEBRTC_WIN)
++    return()
++endif()
++
+ if (DESKTOP_APP_USE_PACKAGED OR LINUX)
+     find_package(tg_owt REQUIRED)
+     target_link_libraries(external_webrtc INTERFACE tg_owt::tg_owt)
+diff --git a/options_win.cmake b/options_win.cmake
+index 9ff67e8..531f7f8 100644
+--- a/options_win.cmake
++++ b/options_win.cmake
+@@ -111,8 +111,7 @@ if (MSVC)
+     endif()
+ endif()
+ 
+-target_link_libraries(common_options
+-INTERFACE
++set(desktop_app_win32_libs
+     winmm
+     imm32
+     ws2_32
+@@ -145,6 +144,11 @@ INTERFACE
+     Propsys
+     Bcrypt
+ )
++if (NOT MSVC)
++    # MinGW import libraries are lowercase; GNU ld is case-sensitive on Linux.
++    list(TRANSFORM desktop_app_win32_libs TOLOWER)
++endif()
++target_link_libraries(common_options INTERFACE ${desktop_app_win32_libs})
+ 
+ if (build_winstore)
+     target_compile_definitions(common_options INTERFACE OS_WIN_STORE)
+diff --git a/variables.cmake b/variables.cmake
+index 0adc703..aea2d3b 100644
+--- a/variables.cmake
++++ b/variables.cmake
+@@ -35,6 +35,8 @@ cmake_dependent_option(DESKTOP_APP_USE_ALLOCATION_TRACER "Use simple allocation
+ option(DESKTOP_APP_USE_PACKAGED_FONTS "Use preinstalled fonts instead of bundled patched ones." OFF)
+ option(DESKTOP_APP_DISABLE_CRASH_REPORTS "Disable crash report generation." ${no_special_target})
+ option(DESKTOP_APP_DISABLE_AUTOUPDATE "Disable autoupdate." ${disable_autoupdate})
++option(DESKTOP_APP_DISABLE_WALLET "Disable TON wallet-engine Rust; use a UniFFI FFI stub." OFF)
++option(LANLINK_DISABLE_CALLS "Disable calls/video/WebRTC (LAN text builds without tg_owt)." OFF)
+ option(DESKTOP_APP_DISABLE_PRIVATE_QT_API "Disable private Qt API use." OFF)
+ cmake_dependent_option(DESKTOP_APP_DISABLE_QT_PLUGINS "Disable bundled Qt plugins." OFF "NOT DESKTOP_APP_DISABLE_PRIVATE_QT_API" ON)
+ cmake_dependent_option(DESKTOP_APP_RELEASE_QT "Link the optimized Qt build even in Debug configuration." OFF "APPLE AND NOT DESKTOP_APP_USE_PACKAGED" OFF)

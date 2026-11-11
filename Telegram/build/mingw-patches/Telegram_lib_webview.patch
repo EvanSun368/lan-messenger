@@ -1,0 +1,29 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1ce6de8..211d55b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -58,8 +58,23 @@ PUBLIC
+     desktop-app::lib_base
+ )
+ 
+-if (WIN32)
++if (WIN32 AND MSVC)
+     nuget_add_webview(lib_webview)
++elseif (WIN32)
++    # MinGW has no nuget.exe and cannot link the MSVC WebView2LoaderStatic.lib.
++    # Official Edge backends and WRL/WinRT storage helpers are skipped.
++    remove_target_sources(lib_webview ${src_loc}
++        webview/platform/win/webview_windows_edge_chromium.cpp
++        webview/platform/win/webview_windows_edge_html.cpp
++        webview/platform/win/webview_windows_data_stream.cpp
++        webview/platform/win/webview_windows_data_stream.h
++        webview/platform/win/webview_windows_temporary_storage.cpp
++    )
++    get_filename_component(_lan_stubs "${CMAKE_SOURCE_DIR}/Telegram/SourceFiles/lan/stubs" REALPATH)
++    target_sources(lib_webview PRIVATE
++        ${_lan_stubs}/webview_win_stubs.cpp
++        ${_lan_stubs}/webview_win_storage_stubs.cpp
++    )
+ elseif (LINUX)
+     include(${cmake_helpers_loc}/external/glib/generate_dbus.cmake)
+     generate_dbus(lib_webview org.desktop_app.GtkIntegration.Webview. Webview ${src_loc}/webview/platform/linux/webview_linux_interface.xml)

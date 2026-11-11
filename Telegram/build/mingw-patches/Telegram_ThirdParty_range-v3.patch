@@ -1,0 +1,32 @@
+diff --git a/include/range/v3/functional/invoke.hpp b/include/range/v3/functional/invoke.hpp
+index 8c3349a20..40a7dedeb 100644
+--- a/include/range/v3/functional/invoke.hpp
++++ b/include/range/v3/functional/invoke.hpp
+@@ -93,6 +93,19 @@ namespace ranges
+ 
+     struct invoke_fn
+     {
++#ifdef __MINGW32__
++        // MinGW member-function-pointer types include a calling-convention
++        // attribute, so they do not match the `F T::*` overloads below and
++        // the fallback "call as a function" path yields a garbage type.
++        // std::invoke handles those PMF types correctly.
++        template<typename F, typename... Args>
++        constexpr auto operator()(F && f, Args &&... args) const
++            noexcept(noexcept(std::invoke((F &&) f, (Args &&) args...)))
++            -> decltype(std::invoke((F &&) f, (Args &&) args...))
++        {
++            return std::invoke((F &&) f, (Args &&) args...);
++        }
++#else
+     private:
+         template(typename, typename T1)(
+             requires detail::dereferenceable_<T1>)
+@@ -141,6 +154,7 @@ namespace ranges
+         {
+             return ((F&&) f)((Args&&) args...);
+         }
++#endif
+     };
+ 
+     RANGES_INLINE_VARIABLE(invoke_fn, invoke)

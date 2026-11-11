@@ -277,6 +277,7 @@ void psDoCleanup() {
 }
 
 int psCleanup() {
+#ifdef _MSC_VER
 	__try
 	{
 		psDoCleanup();
@@ -285,6 +286,9 @@ int psCleanup() {
 	{
 		return 0;
 	}
+#else
+	psDoCleanup();
+#endif
 	return 0;
 }
 
@@ -343,6 +347,7 @@ void psDoFixPrevious() {
 }
 
 int psFixPrevious() {
+#ifdef _MSC_VER
 	__try
 	{
 		psDoFixPrevious();
@@ -351,6 +356,9 @@ int psFixPrevious() {
 	{
 		return 0;
 	}
+#else
+	psDoFixPrevious();
+#endif
 	return 0;
 }
 

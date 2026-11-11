@@ -2743,11 +2743,13 @@ if (WIN32)
         )
     endif()
 
-    target_link_options(Telegram PRIVATE /PDBPAGESIZE:8192)
+    if (MSVC)
+        target_link_options(Telegram PRIVATE /PDBPAGESIZE:8192)
 
-    if (DESKTOP_APP_WIN7_BASELINE)
-        # The loader reads the subsystem version as the minimal Windows.
-        target_link_options(Telegram PRIVATE /SUBSYSTEM:WINDOWS,6.01)
+        if (DESKTOP_APP_WIN7_BASELINE)
+            # The loader reads the subsystem version as the minimal Windows.
+            target_link_options(Telegram PRIVATE /SUBSYSTEM:WINDOWS,6.01)
+        endif()
     endif()
 elseif (APPLE)
     if (NOT DESKTOP_APP_USE_PACKAGED)
@@ -3001,6 +3003,39 @@ if (MSVC)
     endif()
 endif()
 
+if (LANLINK_DISABLE_CALLS)
+    # Do not compile official call/video sources that require tg_owt.
+    file(GLOB_RECURSE lanlink_call_sources
+        "${src_loc}/calls/*.cpp"
+        "${src_loc}/calls/*.c"
+        "${src_loc}/calls/*.mm"
+        "${src_loc}/calls/*.m"
+    )
+    set_source_files_properties(${lanlink_call_sources} PROPERTIES HEADER_FILE_ONLY TRUE)
+    set_source_files_properties(
+        ${src_loc}/media/view/media_view_video_stream.cpp
+        PROPERTIES HEADER_FILE_ONLY TRUE)
+    target_sources(Telegram PRIVATE
+        ${src_loc}/lan/stubs/calls_stubs.cpp
+        ${src_loc}/lan/stubs/calls_ui_stubs.cpp
+        ${src_loc}/lan/stubs/media_view_video_stream_stub.cpp
+    )
+endif()
+
+if (WIN32 AND NOT MSVC)
+    target_link_libraries(Telegram PRIVATE runtimeobject)
+    set_source_files_properties(${src_loc}/platform/win/windows_toast_activator.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
+    target_sources(Telegram PRIVATE ${src_loc}/lan/stubs/toast_activator_mingw_stub.cpp)
+
+    set_source_files_properties(
+        ${src_loc}/platform/win/notifications_manager_win.cpp
+        ${src_loc}/platform/win/windows_autostart_task.cpp
+        ${src_loc}/platform/win/wallet_protection_win.cpp
+        PROPERTIES HEADER_FILE_ONLY TRUE)
+    target_sources(Telegram PRIVATE ${src_loc}/lan/stubs/platform_win_mingw_stubs.cpp)
+
+endif()
+
 target_prepare_qrc(Telegram)
 
 if (NOT DESKTOP_APP_DISABLE_AUTOUPDATE AND NOT build_macstore AND NOT build_winstore)
@@ -3045,7 +3080,7 @@ if (NOT DESKTOP_APP_DISABLE_AUTOUPDATE AND NOT build_macstore AND NOT build_wins
         else()
             target_link_options(Updater PRIVATE -municode)
         endif()
-        if (DESKTOP_APP_WIN7_BASELINE)
+        if (MSVC AND DESKTOP_APP_WIN7_BASELINE)
             target_link_options(Updater PRIVATE /SUBSYSTEM:WINDOWS,6.01)
         endif()
     elseif (APPLE)

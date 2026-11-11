@@ -1,0 +1,34 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index b08b1d7..9b97c51 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,25 @@
+-add_subdirectory(codegen/common)
+-add_subdirectory(codegen/emoji)
+-add_subdirectory(codegen/lang)
+-add_subdirectory(codegen/style)
++# This file is part of Telegram Desktop,
++# the official desktop application for the Telegram messaging service.
++#
++# For license and copyright information please follow this link:
++# https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
++#
++# When cross-compiling (e.g. MinGW on Linux), the codegen tools must be
++# native host binaries. Point LANLINK_HOST_CODEGEN at a prior native build's
++# Telegram/codegen/codegen directory (containing style/, emoji/, lang/).
++if (CMAKE_CROSSCOMPILING AND LANLINK_HOST_CODEGEN)
++    foreach(_tool style emoji lang)
++        if (NOT EXISTS "${LANLINK_HOST_CODEGEN}/${_tool}/codegen_${_tool}")
++            message(FATAL_ERROR
++                "Host codegen tool missing: ${LANLINK_HOST_CODEGEN}/${_tool}/codegen_${_tool}")
++        endif()
++        add_executable(codegen_${_tool} IMPORTED GLOBAL)
++        set_target_properties(codegen_${_tool} PROPERTIES
++            IMPORTED_LOCATION "${LANLINK_HOST_CODEGEN}/${_tool}/codegen_${_tool}")
++    endforeach()
++else()
++    add_subdirectory(codegen/common)
++    add_subdirectory(codegen/emoji)
++    add_subdirectory(codegen/lang)
++    add_subdirectory(codegen/style)
++endif()

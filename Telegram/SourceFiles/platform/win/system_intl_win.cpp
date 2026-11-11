@@ -5,6 +5,21 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#ifdef __MINGW32__
+/* MinGW has no Windows SDK icu.h / icu.dll imports. Same fallback as a
+ * missing icu.dll on MSVC: no platform IntlProvider. */
+#include "platform/platform_system_intl.h"
+
+namespace Platform {
+
+std::shared_ptr<twidget::IntlProvider> CreateSystemIntl(const QString &) {
+	return nullptr;
+}
+
+} // namespace Platform
+
+#else
+
 #include "platform/platform_system_intl.h"
 
 #include "base/platform/win/base_windows_safe_library.h"
@@ -188,3 +203,5 @@ std::shared_ptr<twidget::IntlProvider> CreateSystemIntl(
 }
 
 } // namespace Platform
+
+#endif // !__MINGW32__

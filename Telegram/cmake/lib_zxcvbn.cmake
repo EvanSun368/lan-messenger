@@ -45,21 +45,32 @@ set(zxcvbn_words
 )
 list(TRANSFORM zxcvbn_words PREPEND ${zxcvbn_loc}/)
 
-add_executable(zxcvbn_dictgen ${zxcvbn_loc}/dict-generate.cpp)
-init_target(zxcvbn_dictgen "(codegen)")
-target_compile_features(zxcvbn_dictgen PRIVATE cxx_std_11)
-if (MSVC)
-    target_link_libraries(zxcvbn_dictgen PRIVATE lib_zxcvbn_warnings_off)
+if (CMAKE_CROSSCOMPILING AND LANLINK_HOST_BUILD)
+    foreach(_tool zxcvbn_dictgen zxcvbn_translit)
+        set(_host "${LANLINK_HOST_BUILD}/Telegram/${_tool}")
+        if (NOT EXISTS "${_host}")
+            message(FATAL_ERROR "Host tool missing: ${_host}")
+        endif()
+        add_executable(${_tool} IMPORTED)
+        set_target_properties(${_tool} PROPERTIES IMPORTED_LOCATION "${_host}")
+    endforeach()
 else()
-    target_compile_options(zxcvbn_dictgen PRIVATE -w)
-endif()
+    add_executable(zxcvbn_dictgen ${zxcvbn_loc}/dict-generate.cpp)
+    init_target(zxcvbn_dictgen "(codegen)")
+    target_compile_features(zxcvbn_dictgen PRIVATE cxx_std_11)
+    if (MSVC)
+        target_link_libraries(zxcvbn_dictgen PRIVATE lib_zxcvbn_warnings_off)
+    else()
+        target_compile_options(zxcvbn_dictgen PRIVATE -w)
+    endif()
 
-add_executable(zxcvbn_translit
-    ${src_loc}/_other/zxcvbn_translit.cpp
-    ${src_loc}/ui/passcode_strength_translit.cpp
-)
-init_target(zxcvbn_translit "(codegen)")
-target_include_directories(zxcvbn_translit PRIVATE ${src_loc})
+    add_executable(zxcvbn_translit
+        ${src_loc}/_other/zxcvbn_translit.cpp
+        ${src_loc}/ui/passcode_strength_translit.cpp
+    )
+    init_target(zxcvbn_translit "(codegen)")
+    target_include_directories(zxcvbn_translit PRIVATE ${src_loc})
+endif()
 
 # The generator drops every word with a byte above 0x7F, so the Cyrillic lists
 # are transliterated first, by the table the estimator itself applies.
@@ -70,7 +81,7 @@ foreach (name ${zxcvbn_translit_words})
     add_custom_command(
         OUTPUT ${zxcvbn_gen}/${latin_name}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${zxcvbn_gen}
-        COMMAND zxcvbn_translit ${res_loc}/zxcvbn/${name} ${zxcvbn_gen}/${latin_name}
+        COMMAND $<TARGET_FILE:zxcvbn_translit> ${res_loc}/zxcvbn/${name} ${zxcvbn_gen}/${latin_name}
         DEPENDS zxcvbn_translit ${res_loc}/zxcvbn/${name}
         COMMENT "Transliterating zxcvbn ${name}"
         VERBATIM
@@ -92,7 +103,7 @@ endif()
 add_custom_command(
     OUTPUT ${zxcvbn_gen}/dict-src.h
     COMMAND ${CMAKE_COMMAND} -E make_directory ${zxcvbn_gen}
-    COMMAND zxcvbn_dictgen -o ${zxcvbn_gen}/dict-src.h ${zxcvbn_words} ${zxcvbn_latin_words}
+    COMMAND $<TARGET_FILE:zxcvbn_dictgen> -o ${zxcvbn_gen}/dict-src.h ${zxcvbn_words} ${zxcvbn_latin_words}
     DEPENDS zxcvbn_dictgen ${zxcvbn_words} ${zxcvbn_latin_words}
     COMMENT "Generating zxcvbn dict-src.h"
     VERBATIM
