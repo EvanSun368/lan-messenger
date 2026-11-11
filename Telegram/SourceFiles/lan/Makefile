@@ -1,13 +1,13 @@
 CXX ?= g++
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2 -I.
-SRCS = identity.cpp protocol.cpp node.cpp
-TEST_SRCS = tests/test_main.cpp tests/test_identity.cpp tests/test_protocol.cpp tests/test_node.cpp
+SRCS = identity.cpp protocol.cpp node.cpp lan_ids.cpp
+TEST_SRCS = tests/test_main.cpp tests/test_identity.cpp tests/test_protocol.cpp tests/test_node.cpp tests/test_ids.cpp
 
 .PHONY: all test smoke clean
 
 all: lan_tests lan_node
 
-lan_tests: $(SRCS) $(TEST_SRCS) identity.h protocol.h node.h tests/check.h
+lan_tests: $(SRCS) $(TEST_SRCS) identity.h protocol.h node.h lan_ids.h tests/check.h
 	$(CXX) $(CXXFLAGS) -Itests -o $@ $(TEST_SRCS) $(SRCS)
 
 lan_node: $(SRCS) lan_cli.cpp identity.h protocol.h node.h

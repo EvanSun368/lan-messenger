@@ -28,6 +28,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/main_domain.h"
 #include "main/main_session_settings.h"
 #include "tgw/tgw_storage.h"
+#include "lan/bridge.h"
+#include "lan/lan_mode.h"
 
 namespace Main {
 namespace {
@@ -82,9 +84,16 @@ void Account::start(std::unique_ptr<MTP::Config> config) {
 		? std::move(config)
 		: std::make_unique<MTP::Config>(
 			Core::App().fallbackProductionConfig()));
-	_appConfig->start();
+	if (!Lan::kServerless) {
+		_appConfig->start();
+	}
 	watchProxyChanges();
 	watchSessionChanges();
+	if (Lan::kServerless && !sessionExists()) {
+		if (const auto identity = Lan::TryLoadIdentity()) {
+			Lan::StartLocalSession(this, *identity);
+		}
+	}
 }
 
 void Account::prepareToStartAdded(
@@ -467,6 +476,11 @@ void Account::startMtp(std::unique_ptr<MTP::Config> config) {
 		checkForUpdates(message) || checkForNewSession(message);
 	});
 	_mtp->setGlobalFailHandler([=](const MTP::Error &, const MTP::Response &) {
+		if (Lan::kServerless) {
+			// A stock LAN build must not log out when unused MTP
+			// requests fail because no official DC is reachable.
+			return;
+		}
 		if (const auto session = maybeSession()) {
 			crl::on_main(session, [=] { logOut(); });
 		}
@@ -489,7 +503,7 @@ void Account::startMtp(std::unique_ptr<MTP::Config> config) {
 		destroyMtpKeys(base::take(_mtpKeysToDestroy));
 	}
 
-	if (_sessionUserId) {
+	if (_sessionUserId && !Lan::kServerless) {
 		createSession(
 			_sessionUserId,
 			base::take(_sessionUserSerialized),

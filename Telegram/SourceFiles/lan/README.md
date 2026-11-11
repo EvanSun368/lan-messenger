@@ -9,7 +9,14 @@ It does not talk to Telegram's servers.
 - Discovers other peers with UDP multicast (`239.255.87.42:48710` by default, TTL 1).
 - Exchanges text over direct TCP, with a length-prefixed binary frame and an acknowledgement.
 
-It does not yet implement files, voice or video calls, groups, channels, or the official tdesktop UI hook.
+The official intro/session hook lives alongside this transport (`lan_mode.h`,
+`lan_ids.*`, `bridge.*`). A desktop build of this fork starts with a local
+display name, lists discovered peers in the session, and sends text through
+`lan::Node`. Files, voice or video calls, groups, and channels are still
+out of scope.
+
+`lan_ids.cpp` maps a 32-character `peer_id` onto a synthetic tdesktop
+`UserId` (bit 46 set). That mapping is covered by `tests/test_ids.cpp`.
 
 ## Build and test
 
@@ -19,7 +26,7 @@ The module is plain C++17 and only needs a compiler (no Qt, no tdesktop submodul
 cd Telegram/SourceFiles/lan
 c++ -std=c++17 -O2 -I. -Itests -o lan_tests \
   tests/test_main.cpp tests/test_identity.cpp tests/test_protocol.cpp tests/test_node.cpp \
-  identity.cpp protocol.cpp node.cpp
+  tests/test_ids.cpp identity.cpp protocol.cpp node.cpp lan_ids.cpp
 ./lan_tests
 
 c++ -std=c++17 -O2 -I. -o lan_node lan_cli.cpp identity.cpp protocol.cpp node.cpp
