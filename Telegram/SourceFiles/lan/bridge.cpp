@@ -38,9 +38,12 @@ namespace {
 		const QString &firstName,
 		bool self) {
 	using Flag = MTPDuser::Flag;
+	// Do not set f_contact here. processUser() emits IsContact before it
+	// marks the user loaded (and never marks a phoneless self as loaded),
+	// which logs "userIsContactChanged() called for a not loaded user!".
 	const auto flags = Flag::f_first_name
 		| Flag::f_access_hash
-		| (self ? Flag::f_self : Flag::f_contact);
+		| (self ? Flag::f_self : Flag());
 	return MTP_user(
 		MTP_flags(flags),
 		MTP_long(userId),
@@ -68,6 +71,37 @@ namespace {
 
 [[nodiscard]] MTPUser MakeSelfUser(const lan::Identity &identity);
 [[nodiscard]] MTPUser MakePeerUser(const lan::PeerInfo &peer);
+
+void FinishLoading(not_null<UserData*> user, bool asContact) {
+	if (!user->isLoaded()) {
+		user->setLoadedStatus(PeerData::LoadedStatus::Normal);
+	}
+	if (asContact && !user->isContact()) {
+		user->setIsContact(true);
+	}
+}
+
+void ShowInDialogs(not_null<History*> history) {
+	history->clearFolder();
+	if (!history->chatListTimeId()) {
+		// setChatListExistence() ignores a zero sort key, and
+		// DialogPosFromDate(0) is 0, so a peer with no messages would
+		// never appear in the list.
+		history->setChatListTimeId(base::unixtime::now());
+	}
+	history->markLoadedAtTop();
+	history->updateChatListExistence();
+	history->owner().chatsListChanged(history->folder());
+}
+
+[[nodiscard]] not_null<UserData*> ApplyLanUser(
+		not_null<Main::Session*> session,
+		const MTPUser &data,
+		bool asContact) {
+	const auto user = session->data().processUser(data);
+	FinishLoading(user, asContact);
+	return user;
+}
 
 std::map<Main::Session*, class Bridge*> &Bridges();
 
@@ -106,7 +140,7 @@ public:
 			return false;
 		}
 		const auto history = _session->data().history(peer);
-		history->clearFolder();
+		ShowInDialogs(history);
 		const auto item = history->addNewLocalMessage({
 			.id = _session->data().nextLocalMessageId(),
 			.flags = MessageFlag::Outgoing,
@@ -165,10 +199,12 @@ private:
 			return;
 		}
 		remember(info.peer_id, userId);
-		const auto user = _session->data().processUser(MakePeerUser(info));
+		const auto user = ApplyLanUser(_session, MakePeerUser(info), true);
 		const auto history = _session->data().history(user);
-		history->clearFolder();
-		history->updateChatListExistence();
+		ShowInDialogs(history);
+		LOG(("LanLink: discovered peer %1 (%2)").arg(
+			Utf8(info.display_name),
+			Utf8(info.peer_id)));
 	}
 
 	void injectIncoming(const lan::IncomingText &text) {
@@ -188,9 +224,9 @@ private:
 		info.display_name = text.from_name.empty()
 			? text.from_peer_id
 			: text.from_name;
-		const auto user = _session->data().processUser(MakePeerUser(info));
+		const auto user = ApplyLanUser(_session, MakePeerUser(info), true);
 		const auto history = _session->data().history(user);
-		history->clearFolder();
+		ShowInDialogs(history);
 		const auto date = text.timestamp_ms
 			? TimeId(text.timestamp_ms / 1000)
 			: base::unixtime::now();
@@ -266,6 +302,11 @@ void StartLocalSession(
 	}
 	account->createSession(MakeSelfUser(identity));
 	const auto session = &account->session();
+	FinishLoading(session->user(), false);
+	// Official dialogs/contacts fetches are MTP no-ops here, so mark both
+	// lists loaded or the sidebar stays on "Loading...".
+	session->data().contactsLoaded() = true;
+	session->data().chatsListDone(nullptr);
 	auto *bridge = session->lifetime().make_state<Bridge>(session, identity);
 	Bridges()[session] = bridge;
 }
