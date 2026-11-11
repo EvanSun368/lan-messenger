@@ -50,10 +50,9 @@ to Telegram cloud even if a target misses the define.
 - Files, voice/video calls, groups, channels, stickers, or secret chats on the LAN path.
 - Encryption of the LAN transport (v1 is plaintext on the local network).
 - NAT traversal or communication across routers; this is same-LAN only.
-- A full Linux or Windows tdesktop binary was not produced in the environment
-  that landed this hook (official desktop builds need submodules and a long
-  toolchain). The isolated LAN tests and `lan_node` smoke test are the
-  verification for the transport and id-mapping glue.
+- A packaged **Linux** desktop binary can be built against system Qt 6.8
+  (see [building-linux-packaged.md](building-linux-packaged.md)). A Windows
+  package was not produced in this pass; `lan::Node` is still POSIX-only.
 - `lan::Node` still uses POSIX sockets (`sys/socket.h`, `poll`, `fcntl`).
   A Windows desktop build will need a Winsock port of `node.cpp` before it
   can link.
@@ -63,11 +62,18 @@ to Telegram cloud even if a target misses the define.
 - Chat history is not specifically persisted as LAN transcripts across
   restarts (tdesktop local storage may keep some items if the same
   synthetic user ids come back; this is not guaranteed).
-- Some official widgets may still show a connecting or empty-cloud state,
-  because MTP is constructed (the session layer expects an `MTP::Instance`)
-  but never actually connects.
+- MTP is constructed (the session layer expects an `MTP::Instance`) but never
+  connects. `dcstate()` / `dctransport()` report a connected / empty transport
+  when there is no MTP session, so the official connecting banner does not
+  abort the process. The dialogs list can still stay on "Loading..." after a
+  local session starts; discovered LAN peers may not appear in the UI yet
+  (`userIsContactChanged()` is logged for a not-loaded user). Two desktop
+  instances have been observed to bind UDP 48710 and form a direct TCP
+  session even while the chat list stays empty.
 - Leftover official login widgets (`intro_qr.cpp`, `intro_phone.cpp`) are
-  still in the tree but are not the startup path.
+  still in the tree but are not the startup path. The intro field is still
+  labelled "First name", and leftover App ID / window class values still
+  say TelegramDesktop.
 
 ## Hook map
 
@@ -75,6 +81,7 @@ to Telegram cloud even if a target misses the define.
 | --- | --- |
 | Empty official DCs | `mtproto/mtproto_dc_options.cpp` (`constructFromBuiltIn`) |
 | Do not start MTP sessions or `requestConfig` | `mtproto/mtp_instance.cpp` |
+| `dcstate` / `dctransport` without an MTP session | `mtproto/mtp_instance.cpp` |
 | Drop MTP `sendRequest` | `mtproto/mtp_instance.cpp` |
 | Do not restore a leftover official session or log out on MTP failure | `main/main_account.cpp` |
 | Skip `AppConfig` network refresh | `main/main_app_config.cpp` |
@@ -85,5 +92,6 @@ to Telegram cloud even if a target misses the define.
 | Send / receive text | `apiwrap.cpp` (`ApiWrap::sendMessage`) + `lan/bridge.cpp` |
 | Branding | `lan/lan_mode.h`, intro title, `window/main_window.cpp` |
 
-Until a full desktop binary is built, use `lan_node` to exercise the
-transport by itself.
+A packaged Linux desktop binary is documented in
+[building-linux-packaged.md](building-linux-packaged.md). `lan_node` and
+`tests/smoke_two_processes.sh` remain the isolated transport checks.

@@ -17,6 +17,7 @@
 #include "history/history_item_helpers.h"
 #include "main/main_account.h"
 #include "main/main_session.h"
+#include "main/main_session_settings.h"
 #include "settings.h"
 
 #include <QtCore/QDir>
@@ -64,6 +65,9 @@ namespace {
 		MTPlong(), // send_paid_messages_stars
 		MTPlong()); // linked_community_id
 }
+
+[[nodiscard]] MTPUser MakeSelfUser(const lan::Identity &identity);
+[[nodiscard]] MTPUser MakePeerUser(const lan::PeerInfo &peer);
 
 std::map<Main::Session*, class Bridge*> &Bridges();
 
@@ -211,6 +215,20 @@ std::map<Main::Session*, Bridge*> &Bridges() {
 	return map;
 }
 
+MTPUser MakeSelfUser(const lan::Identity &identity) {
+	return MakeUser(
+		lan::user_id_from_peer_id(identity.peer_id),
+		Utf8(identity.display_name),
+		true);
+}
+
+MTPUser MakePeerUser(const lan::PeerInfo &peer) {
+	return MakeUser(
+		lan::user_id_from_peer_id(peer.peer_id),
+		Utf8(peer.display_name),
+		false);
+}
+
 } // namespace
 
 std::filesystem::path IdentityDirectory() {
@@ -237,20 +255,6 @@ std::optional<lan::Identity> TryLoadIdentity() {
 
 lan::Identity SaveOrUpdateIdentity(std::string_view displayName) {
 	return lan::load_or_create_identity(IdentityDirectory(), displayName);
-}
-
-MTPUser MakeSelfUser(const lan::Identity &identity) {
-	return MakeUser(
-		lan::user_id_from_peer_id(identity.peer_id),
-		Utf8(identity.display_name),
-		true);
-}
-
-MTPUser MakePeerUser(const lan::PeerInfo &peer) {
-	return MakeUser(
-		lan::user_id_from_peer_id(peer.peer_id),
-		Utf8(peer.display_name),
-		false);
 }
 
 void StartLocalSession(

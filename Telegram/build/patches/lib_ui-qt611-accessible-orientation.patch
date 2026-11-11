@@ -1,0 +1,31 @@
+diff --git a/ui/accessible/ui_accessible_widget.cpp b/ui/accessible/ui_accessible_widget.cpp
+index d85c78f..cb67927 100644
+--- a/ui/accessible/ui_accessible_widget.cpp
++++ b/ui/accessible/ui_accessible_widget.cpp
+@@ -373,13 +373,18 @@ bool Widget::clear() {
+ 
+ QList<QAccessible::Attribute> Widget::attributeKeys() const {
+ 	auto result = QList<QAccessible::Attribute>();
++	// QAccessible::Attribute::Orientation was added in Qt 6.11. Official
++	// tdesktop builds Qt 6.11; packaged Debian Qt 6.8/6.10 still compile.
++#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+ 	if (rp()->accessibilityOrientation().has_value()) {
+ 		result.append(QAccessible::Attribute::Orientation);
+ 	}
++#endif
+ 	return result;
+ }
+ 
+ QVariant Widget::attributeValue(QAccessible::Attribute key) const {
++#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+ 	if (key == QAccessible::Attribute::Orientation) {
+ 		if (const auto orientation = rp()->accessibilityOrientation()) {
+ 			// Plain int by design: the UIA bridge reads this back with
+@@ -388,6 +393,7 @@ QVariant Widget::attributeValue(QAccessible::Attribute key) const {
+ 			return int(*orientation);
+ 		}
+ 	}
++#endif
+ 	return QVariant();
+ }
+ 

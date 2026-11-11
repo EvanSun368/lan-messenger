@@ -1,5 +1,10 @@
 ## Build instructions for Linux using Docker
 
+For this fork, a packaged (non-Docker) build against system Qt is documented
+in [building-linux-packaged.md](building-linux-packaged.md). The steps below
+are the official Docker / `centos_env` path and still expect Telegram API
+credentials, which a stock LanLink build does not use.
+
 ### Prepare folder
 
 Choose a folder for the future build, for example **/home/user/TBuild**. It will be named ***BuildPath*** in the rest of this document. All commands will be launched from Terminal.

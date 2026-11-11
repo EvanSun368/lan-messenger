@@ -631,13 +631,16 @@ void Instance::Private::restart(ShiftedDcId shiftedDcId) {
 }
 
 int32 Instance::Private::dcstate(ShiftedDcId shiftedDcId) {
+	// LanLink serverless skips startSession() so no official DC socket is
+	// opened. Callers such as the connecting banner still query dcstate().
+	if (!_mainSession) {
+		return ConnectedState;
+	}
 	if (!shiftedDcId) {
-		Assert(_mainSession != nullptr);
 		return _mainSession->getState();
 	}
 
 	if (!BareDcId(shiftedDcId)) {
-		Assert(_mainSession != nullptr);
 		shiftedDcId += BareDcId(_mainSession->getDcWithShift());
 	}
 
@@ -648,12 +651,13 @@ int32 Instance::Private::dcstate(ShiftedDcId shiftedDcId) {
 }
 
 QString Instance::Private::dctransport(ShiftedDcId shiftedDcId) {
+	if (!_mainSession) {
+		return QString();
+	}
 	if (!shiftedDcId) {
-		Assert(_mainSession != nullptr);
 		return _mainSession->transport();
 	}
 	if (!BareDcId(shiftedDcId)) {
-		Assert(_mainSession != nullptr);
 		shiftedDcId += BareDcId(_mainSession->getDcWithShift());
 	}
 
