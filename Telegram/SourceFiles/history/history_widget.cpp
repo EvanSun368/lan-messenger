@@ -7,6 +7,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/history_widget.h"
 
+#include "lan/lan_mode.h"
+
 #include "api/api_compose_with_ai.h"
 #include "api/api_editing.h"
 #include "api/api_bot.h"
@@ -5062,6 +5064,15 @@ void HistoryWidget::checkActivation() {
 
 void HistoryWidget::firstLoadMessages() {
 	if (!_history || _firstLoadRequest) {
+		return;
+	}
+	if (Lan::kServerless) {
+		// There is no MTProto history to fetch. Leave a hanging GetHistory
+		// request and the open chat stays blank even when local messages
+		// are already in the dialogs list.
+		_history->getReadyFor(ShowAtTheEndMsgId);
+		_history->markLoadedAtTop();
+		historyLoaded();
 		return;
 	}
 

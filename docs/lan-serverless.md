@@ -65,11 +65,13 @@ to Telegram cloud even if a target misses the define.
 - MTP is constructed (the session layer expects an `MTP::Instance`) but never
   connects. `dcstate()` / `dctransport()` report a connected / empty transport
   when there is no MTP session, so the official connecting banner does not
-  abort the process. The dialogs list can still stay on "Loading..." after a
-  local session starts; discovered LAN peers may not appear in the UI yet
-  (`userIsContactChanged()` is logged for a not-loaded user). Two desktop
-  instances have been observed to bind UDP 48710 and form a direct TCP
-  session even while the chat list stays empty.
+  abort the process. After a local session starts, contacts and the chats list
+  are marked loaded (official MTP dialogs/contacts fetches are no-ops) so the
+  sidebar does not stay on "Loading...". Discovered peers are fully loaded
+  before `setIsContact`, given a non-zero chat-list date, and added to the
+  dialogs list even before the first message. Opening a chat skips
+  official `GetHistory` (which would never complete) so in-app bubbles
+  from `addNewLocalMessage` are visible.
 - Leftover official login widgets (`intro_qr.cpp`, `intro_phone.cpp`) are
   still in the tree but are not the startup path. The intro field is still
   labelled "First name", and leftover App ID / window class values still
