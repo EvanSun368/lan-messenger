@@ -658,6 +658,9 @@ void Filler::addInfo() {
 }
 
 void Filler::addStoryArchive() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	const auto channel = _peer ? _peer->asChannel() : nullptr;
 	if (!channel || !channel->canEditStories()) {
 		return;
@@ -1062,6 +1065,9 @@ void Filler::addDirectMessages() {
 }
 
 void Filler::addExportChat() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	if (!_peer->canExportChatHistory()) {
 		return;
 	}
@@ -1082,6 +1088,9 @@ void Filler::addExportChat() {
 }
 
 void Filler::addTranslate() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	if (_peer->translationFlag() != PeerData::TranslationFlag::Disabled
 		|| !_peer->session().premium()
 		|| !Core::App().settings().translateChatEnabled()) {
@@ -1296,6 +1305,9 @@ void Filler::addManageChat() {
 }
 
 void Filler::addBoostChat() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	if (const auto channel = _peer->asChannel()) {
 		if (channel->isMonoforum()) {
 			return;
@@ -1313,6 +1325,9 @@ void Filler::addBoostChat() {
 }
 
 void Filler::addViewStatistics() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	if (const auto channel = _peer->asChannel()) {
 		if (channel->isMonoforum()) {
 			return;

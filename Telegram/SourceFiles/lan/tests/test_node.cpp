@@ -1,5 +1,6 @@
 #include "check.h"
 #include "node.h"
+#include "e2e.h"
 
 #include <chrono>
 #include <string>
@@ -54,6 +55,16 @@ LAN_TEST(two_nodes_discover_and_exchange_text_on_loopback) {
 
 	LAN_REQUIRE(wait_for_peer(alice, bob, bob.identity().peer_id));
 	LAN_REQUIRE(wait_for_peer(bob, alice, alice.identity().peer_id));
+	LAN_CHECK(lan::is_valid_public_key(alice.public_key()));
+	LAN_CHECK(alice.public_key() != bob.public_key());
+	bool saw_bob_key = false;
+	for (const auto &peer : alice.peers()) {
+		if (peer.peer_id == bob.identity().peer_id) {
+			LAN_CHECK(peer.public_key == bob.public_key());
+			saw_bob_key = true;
+		}
+	}
+	LAN_CHECK(saw_bob_key);
 
 	const auto msg_id = alice.send_text(bob.identity().peer_id, "hello from alice");
 	LAN_CHECK(lan::is_valid_peer_id(msg_id));

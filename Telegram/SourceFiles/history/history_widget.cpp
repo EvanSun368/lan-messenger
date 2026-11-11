@@ -9811,6 +9811,9 @@ void HistoryWidget::checkLastPinnedClickedIdReset(
 
 void HistoryWidget::setupTranslateBar() {
 	Expects(_history != nullptr);
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 
 	_translateBar = std::make_unique<HistoryView::TranslateBar>(
 		_topBars.get(),

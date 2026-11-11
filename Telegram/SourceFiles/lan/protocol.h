@@ -9,13 +9,15 @@
 
 namespace lan {
 
-constexpr uint8_t kProtocolVersion = 1;
+constexpr uint8_t kProtocolVersion = 2;
 constexpr uint32_t kMaxFramePayload = 64 * 1024;
 inline constexpr char kAnnounceMagic[4] = {'L', 'N', 'K', 'L'};
 
 struct Hello {
 	std::string peer_id; // 32 hex
 	std::string display_name;
+	// Official tde2e public key, 32 raw bytes.
+	std::vector<uint8_t> public_key;
 };
 
 struct Text {
@@ -48,6 +50,8 @@ struct Announce {
 	std::string display_name;
 	uint16_t tcp_port = 0;
 	uint8_t version = kProtocolVersion;
+	// Official tde2e public key, 32 raw bytes.
+	std::vector<uint8_t> public_key;
 };
 
 // UDP discovery datagram. Not length-prefixed; one datagram is one announce.

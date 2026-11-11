@@ -1,8 +1,15 @@
 #include "check.h"
 #include "protocol.h"
+#include "e2e.h"
 
 #include <string>
 #include <vector>
+
+namespace {
+std::vector<uint8_t> dummy_key(uint8_t tag) {
+	return std::vector<uint8_t>(lan::kE2EPublicKeySize, tag);
+}
+} // namespace
 
 LAN_TEST(hex_roundtrip) {
 	const uint8_t bytes[4] = {0x00, 0xab, 0xcd, 0xff};
@@ -37,7 +44,10 @@ static void expect_roundtrip(const lan::Message &message) {
 }
 
 LAN_TEST(frame_roundtrip_hello_text_ack_bye) {
-	expect_roundtrip(lan::Hello{"0123456789abcdef0123456789abcdef", "Alice"});
+	expect_roundtrip(lan::Hello{
+		"0123456789abcdef0123456789abcdef",
+		"Alice",
+		dummy_key(0x11)});
 	expect_roundtrip(lan::Text{lan::random_hex_id(), 1'700'000'000'000ULL, "你好，LAN"});
 	expect_roundtrip(lan::Ack{"0123456789abcdef0123456789abcdef"});
 	expect_roundtrip(lan::Bye{});
@@ -70,6 +80,7 @@ LAN_TEST(announce_roundtrip) {
 	announce.display_name = "车间主机";
 	announce.tcp_port = 48711;
 	announce.version = lan::kProtocolVersion;
+	announce.public_key = dummy_key(0x22);
 	const auto encoded = lan::encode_announce(announce);
 	const auto decoded = lan::decode_announce(encoded.data(), encoded.size());
 	LAN_REQUIRE(decoded.has_value());
@@ -77,6 +88,43 @@ LAN_TEST(announce_roundtrip) {
 	LAN_CHECK_EQ(decoded->display_name, announce.display_name);
 	LAN_CHECK_EQ(decoded->tcp_port, announce.tcp_port);
 	LAN_CHECK_EQ(static_cast<int>(decoded->version), static_cast<int>(announce.version));
+	LAN_CHECK(decoded->public_key == announce.public_key);
 	LAN_CHECK(!lan::decode_announce(encoded.data(), 3).has_value());
 	LAN_CHECK(!lan::decode_announce(nullptr, 0).has_value());
+}
+
+LAN_TEST(announce_rejects_version_1_plaintext_packets) {
+	// v1 layout: magic + version + port + peer_id + name, no public key.
+	std::vector<uint8_t> v1 = {
+		'L', 'N', 'K', 'L',
+		1, // version 1
+		0xbe, 0x27, // port 48711
+	};
+	v1.insert(v1.end(), 16, 0xab);
+	v1.push_back(5);
+	v1.insert(v1.end(), {'A', 'l', 'i', 'c', 'e'});
+	LAN_CHECK(!lan::decode_announce(v1.data(), v1.size()).has_value());
+}
+
+LAN_TEST(encrypted_text_frame_does_not_contain_plaintext) {
+	const auto alice = lan::E2EKey::generate();
+	const auto bob = lan::E2EKey::generate();
+	const std::string plain = "unique-plaintext-needle-xyz";
+	const auto cipher = alice.encrypt_for(bob.public_key(), plain);
+	lan::Text text;
+	text.msg_id = lan::random_hex_id();
+	text.timestamp_ms = 42;
+	text.body.assign(cipher.begin(), cipher.end());
+	const auto frame = lan::encode_frame(text);
+	const std::string wire(frame.begin(), frame.end());
+	LAN_CHECK(wire.find(plain) == std::string::npos);
+	const auto decoded = lan::try_decode_frame(frame.data(), frame.size());
+	LAN_REQUIRE(decoded.has_value());
+	const auto *got = std::get_if<lan::Text>(&decoded->message);
+	LAN_REQUIRE(got != nullptr);
+	const auto opened = bob.decrypt_from(
+		alice.public_key(),
+		std::string_view(got->body));
+	LAN_REQUIRE(opened.has_value());
+	LAN_CHECK_EQ(*opened, plain);
 }

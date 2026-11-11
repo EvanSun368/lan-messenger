@@ -622,6 +622,9 @@ Main::Session &FormController::session() const {
 }
 
 void FormController::show() {
+#ifdef LANLINK_TRIM_CLOUD
+	return;
+#endif
 	requestForm();
 	requestPassword();
 }

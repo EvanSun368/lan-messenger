@@ -113,10 +113,18 @@ Widget::Widget(
 		appendStep(new StartWidget(this, _account, getData()));
 		break;
 	case EnterPoint::Phone:
+#ifdef LANLINK_TRIM_CLOUD
+		appendStep(new StartWidget(this, _account, getData()));
+#else
 		appendStep(new PhoneWidget(this, _account, getData()));
+#endif
 		break;
 	case EnterPoint::Qr:
+#ifdef LANLINK_TRIM_CLOUD
+		appendStep(new StartWidget(this, _account, getData()));
+#else
 		appendStep(new QrWidget(this, _account, getData()));
+#endif
 		break;
 	default: Unexpected("Enter point in Intro::Widget::Widget.");
 	}
@@ -557,7 +565,11 @@ void Widget::resetAccount() {
 			getData()->controller->hideLayer();
 			if (getData()->phone.isEmpty()) {
 				moveToStep(
+#ifdef LANLINK_TRIM_CLOUD
+					new StartWidget(this, _account, getData()),
+#else
 					new QrWidget(this, _account, getData()),
+#endif
 					StackAction::Replace,
 					Animate::Back);
 			} else {

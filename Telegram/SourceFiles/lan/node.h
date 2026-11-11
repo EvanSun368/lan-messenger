@@ -2,6 +2,7 @@
 
 #include "identity.h"
 #include "protocol.h"
+#include "e2e.h"
 
 #include <chrono>
 #include <cstdint>
@@ -17,6 +18,7 @@ struct PeerInfo {
 	std::string display_name;
 	std::string ip;
 	uint16_t tcp_port = 0;
+	std::vector<uint8_t> public_key;
 };
 
 struct IncomingText {
@@ -36,6 +38,8 @@ struct NodeConfig {
 	std::string bind_address = "0.0.0.0";
 	uint16_t tcp_port = 0; // 0 = ephemeral
 	uint16_t udp_port = 0; // 0 = use discovery_port, or ephemeral if 0 and no multicast?
+	// Optional official tde2e key. If empty, the node generates an ephemeral key.
+	std::shared_ptr<E2EKey> e2e_key;
 	std::chrono::milliseconds announce_interval{1000};
 	std::chrono::milliseconds peer_timeout{4000};
 };
@@ -54,6 +58,7 @@ public:
 	void step(std::chrono::milliseconds timeout);
 
 	[[nodiscard]] const Identity &identity() const;
+	[[nodiscard]] const std::vector<uint8_t> &public_key() const;
 	[[nodiscard]] uint16_t tcp_port() const;
 	[[nodiscard]] uint16_t udp_port() const;
 	[[nodiscard]] std::vector<PeerInfo> peers() const;

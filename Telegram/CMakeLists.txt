@@ -134,6 +134,7 @@ set_source_files_properties(
     ${src_loc}/lan/protocol.cpp
     ${src_loc}/lan/node.cpp
     ${src_loc}/lan/lan_ids.cpp
+    ${src_loc}/lan/e2e.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON
 )
 nice_target_sources(Telegram ${src_loc}
@@ -1534,6 +1535,8 @@ PRIVATE
     lan/node.h
     lan/protocol.cpp
     lan/protocol.h
+    lan/e2e.cpp
+    lan/e2e.h
     iv/iv_cached_media.cpp
     iv/iv_cached_media.h
     iv/editor/iv_editor_button_box.cpp
@@ -3023,7 +3026,7 @@ if (LANLINK_DISABLE_CALLS)
 endif()
 
 if (WIN32 AND NOT MSVC)
-    target_link_libraries(Telegram PRIVATE runtimeobject)
+    target_link_libraries(Telegram PRIVATE runtimeobject bcrypt)
     set_source_files_properties(${src_loc}/platform/win/windows_toast_activator.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
     target_sources(Telegram PRIVATE ${src_loc}/lan/stubs/toast_activator_mingw_stub.cpp)
 
