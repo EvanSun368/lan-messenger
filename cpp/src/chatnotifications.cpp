@@ -1,8 +1,9 @@
 #include "chatnotifications.h"
 #include <QtWidgets>
-ChatNotifications::ChatNotifications(QWidget *window, bool desktopEnabled) : QObject(window), m_window(window) {
+ChatNotifications::ChatNotifications(QWidget *window, bool desktopEnabled, const QIcon &icon) : QObject(window), m_window(window) {
     if (!desktopEnabled || !QSystemTrayIcon::isSystemTrayAvailable()) return;
-    m_tray = new QSystemTrayIcon(window->style()->standardIcon(QStyle::SP_MessageBoxInformation), this);
+    const auto trayIcon = icon.isNull() ? window->style()->standardIcon(QStyle::SP_MessageBoxInformation) : icon;
+    m_tray = new QSystemTrayIcon(trayIcon, this);
     m_tray->setToolTip("LanLink");
     auto *menu = new QMenu(window);
     menu->addAction("打开 LanLink", this, [this] { if(m_window) {m_window->showNormal(); m_window->raise(); m_window->activateWindow();} });

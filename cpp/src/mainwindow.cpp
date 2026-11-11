@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "chatnotifications.h"
+#include <QIcon>
 #include "emojipicker.h"
 #include "filetransfer.h"
 #include "linkpreview.h"
@@ -205,7 +206,8 @@ MainWindow::MainWindow(QString storage, quint16 port, bool demo, QWidget *parent
     buildFiles();
     buildSharing();
     setupServices();
-    m_notifications = new ChatNotifications(this, !m_demo);
+    setWindowIcon(QIcon(QStringLiteral(":/icons/lanlink.png")));
+    m_notifications = new ChatNotifications(this, !m_demo, windowIcon());
     m_notifications->setEnabled(m_settings.value("notifications", true).toBool());
     connect(m_notifications, &ChatNotifications::unreadChanged, this, [this] {
         refreshContacts();

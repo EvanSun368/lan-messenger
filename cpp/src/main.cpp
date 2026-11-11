@@ -4,11 +4,13 @@
 #include <QDir>
 #include <QTemporaryDir>
 #include <QTimer>
+#include <QIcon>
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
     QCoreApplication::setOrganizationName("LanLink");
     QCoreApplication::setApplicationName("LanLinkCpp");
     QCoreApplication::setApplicationVersion("0.5.1");
+    QApplication::setWindowIcon(QIcon(QStringLiteral(":/icons/lanlink.png")));
     QCommandLineParser p;
     p.addHelpOption();
     p.addVersionOption();
