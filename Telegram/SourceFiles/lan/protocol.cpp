@@ -1,9 +1,16 @@
 #include "protocol.h"
 
 #include "identity.h"
+#include "e2e.h"
 
-#include <fstream>
 #include <stdexcept>
+
+#if defined(_WIN32)
+#include <windows.h>
+#include <bcrypt.h>
+#else
+#include <fstream>
+#endif
 
 namespace lan {
 namespace {
@@ -136,6 +143,10 @@ std::vector<uint8_t> payload_for(const Message &message) {
 			payload,
 			reinterpret_cast<const uint8_t *>(hello->display_name.data()),
 			hello->display_name.size());
+		if (!is_valid_public_key(hello->public_key)) {
+			throw std::invalid_argument("invalid hello public_key");
+		}
+		append_bytes(payload, hello->public_key.data(), hello->public_key.size());
 		return payload;
 	}
 	if (const auto *text = std::get_if<Text>(&message)) {
@@ -196,10 +207,21 @@ std::optional<std::vector<uint8_t>> from_hex(std::string_view hex) {
 
 std::string random_hex_id() {
 	uint8_t bytes[16] = {};
+#if defined(_WIN32)
+	const NTSTATUS status = BCryptGenRandom(
+		nullptr,
+		bytes,
+		sizeof(bytes),
+		BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+	if (status != 0) {
+		throw std::runtime_error("failed to generate random id");
+	}
+#else
 	std::ifstream urandom("/dev/urandom", std::ios::binary);
 	if (!urandom.read(reinterpret_cast<char *>(bytes), sizeof(bytes))) {
-		throw std::runtime_error("failed to read /dev/urandom");
+		throw std::runtime_error("failed to generate random id");
 	}
+#endif
 	return to_hex(bytes, sizeof(bytes));
 }
 
@@ -250,8 +272,10 @@ std::optional<DecodeResult> try_decode_frame(const uint8_t *data, size_t size) {
 		hello.display_name.assign(
 			reinterpret_cast<const char *>(name.data()),
 			name.size());
-		if (!is_valid_peer_id(hello.peer_id)
-			|| !is_valid_display_name(hello.display_name)) {
+		if (!read_bytes(cursor, payload_end, kE2EPublicKeySize, hello.public_key)
+			|| !is_valid_peer_id(hello.peer_id)
+			|| !is_valid_display_name(hello.display_name)
+			|| !is_valid_public_key(hello.public_key)) {
 			return std::nullopt;
 		}
 		message = std::move(hello);
@@ -307,16 +331,20 @@ std::vector<uint8_t> encode_announce(const Announce &announce) {
 	append_u8(packet, announce.version);
 	append_u16be(packet, announce.tcp_port);
 	append_bytes(packet, raw->data(), raw->size());
+	if (!is_valid_public_key(announce.public_key)) {
+		throw std::invalid_argument("invalid announce");
+	}
 	append_u8(packet, static_cast<uint8_t>(announce.display_name.size()));
 	append_bytes(
 		packet,
 		reinterpret_cast<const uint8_t *>(announce.display_name.data()),
 		announce.display_name.size());
+	append_bytes(packet, announce.public_key.data(), announce.public_key.size());
 	return packet;
 }
 
 std::optional<Announce> decode_announce(const uint8_t *data, size_t size) {
-	if (data == nullptr || size < 4 + 1 + 2 + 16 + 1) {
+	if (data == nullptr || size < 4 + 1 + 2 + 16 + 1 + kE2EPublicKeySize) {
 		return std::nullopt;
 	}
 	if (data[0] != kAnnounceMagic[0]
@@ -345,7 +373,10 @@ std::optional<Announce> decode_announce(const uint8_t *data, size_t size) {
 	announce.display_name.assign(
 		reinterpret_cast<const char *>(name.data()),
 		name.size());
-	if (!is_valid_display_name(announce.display_name) || cursor != end) {
+	if (!is_valid_display_name(announce.display_name)
+		|| !read_bytes(cursor, end, kE2EPublicKeySize, announce.public_key)
+		|| !is_valid_public_key(announce.public_key)
+		|| cursor != end) {
 		return std::nullopt;
 	}
 	return announce;

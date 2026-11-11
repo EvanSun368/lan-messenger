@@ -4,6 +4,7 @@
 #include "lan/lan_ids.h"
 #include "lan/lan_mode.h"
 #include "lan/node.h"
+#include "lan/e2e.h"
 
 #include "api/api_common.h"
 #include "base/timer.h"
@@ -166,6 +167,8 @@ private:
 		lan::NodeConfig config;
 		config.identity = identity;
 		config.bind_address = "0.0.0.0";
+		config.e2e_key = std::make_shared<lan::E2EKey>(
+			lan::load_or_create_e2e_key(IdentityDirectory()));
 		return config;
 	}
 

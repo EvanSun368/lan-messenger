@@ -1,5 +1,6 @@
 #include "node.h"
 #include "socket_compat.h"
+#include "e2e.h"
 
 #include <algorithm>
 #include <chrono>
@@ -136,6 +137,7 @@ struct Node::Impl {
 		bool hello_received = false;
 		std::string peer_id;
 		std::string display_name;
+		std::vector<uint8_t> public_key;
 		std::string ip;
 		uint16_t tcp_port = 0;
 		std::vector<uint8_t> read_buf;
@@ -159,6 +161,30 @@ struct Node::Impl {
 			|| !is_valid_display_name(config_.identity.display_name)) {
 			throw std::invalid_argument("invalid node identity");
 		}
+		if (!config_.e2e_key) {
+			config_.e2e_key = std::make_shared<E2EKey>(E2EKey::generate());
+		}
+	}
+
+	Hello make_hello() const {
+		return Hello{
+			config_.identity.peer_id,
+			config_.identity.display_name,
+			config_.e2e_key->public_key(),
+		};
+	}
+
+	const std::vector<uint8_t> *lookup_public_key(
+			const std::string &peer_id,
+			const Connection *connection) const {
+		if (connection && is_valid_public_key(connection->public_key)) {
+			return &connection->public_key;
+		}
+		const auto seen = seen_.find(peer_id);
+		if (seen != seen_.end() && is_valid_public_key(seen->second.info.public_key)) {
+			return &seen->second.info.public_key;
+		}
+		return nullptr;
 	}
 
 	~Impl() {
@@ -302,7 +328,14 @@ struct Node::Impl {
 		if (!connection) {
 			return false;
 		}
-		queue_frame(*connection, Text{pending.msg_id, pending.timestamp_ms, pending.body});
+		const auto *key = lookup_public_key(peer_id, connection);
+		if (!key) {
+			// Fail closed: never put plaintext on the wire.
+			return false;
+		}
+		const auto cipher = config_.e2e_key->encrypt_for(*key, pending.body);
+		std::string body(cipher.begin(), cipher.end());
+		queue_frame(*connection, Text{pending.msg_id, pending.timestamp_ms, std::move(body)});
 		return true;
 	}
 
@@ -328,6 +361,7 @@ struct Node::Impl {
 		announce.peer_id = config_.identity.peer_id;
 		announce.display_name = config_.identity.display_name;
 		announce.tcp_port = tcp_port_;
+		announce.public_key = config_.e2e_key->public_key();
 		const auto packet = encode_announce(announce);
 		auto send_to = [&](const sockaddr_in &addr) {
 			socket_sendto(
@@ -363,9 +397,14 @@ struct Node::Impl {
 		auto &seen = seen_[info.peer_id];
 		const bool is_new = seen.info.peer_id.empty();
 		const auto known_port = seen.info.tcp_port;
+		const auto known_key = seen.info.public_key;
 		seen.info = info;
 		if (seen.info.tcp_port == 0 && known_port != 0) {
 			seen.info.tcp_port = known_port;
+		}
+		if (!is_valid_public_key(seen.info.public_key)
+			&& is_valid_public_key(known_key)) {
+			seen.info.public_key = known_key;
 		}
 		seen.last_seen = Clock::now();
 		if (is_new) {
@@ -399,6 +438,7 @@ struct Node::Impl {
 			info.display_name = announce->display_name;
 			info.ip = addr_ip(from);
 			info.tcp_port = announce->tcp_port;
+			info.public_key = announce->public_key;
 			remember_peer(info);
 		}
 	}
@@ -421,9 +461,7 @@ struct Node::Impl {
 			Connection connection;
 			connection.fd = fd;
 			connection.ip = addr_ip(from);
-			queue_frame(connection, Hello{
-				config_.identity.peer_id,
-				config_.identity.display_name});
+			queue_frame(connection, make_hello());
 			connection.hello_sent = true;
 			connections_.push_back(std::move(connection));
 		}
@@ -475,9 +513,7 @@ struct Node::Impl {
 		connection.tcp_port = seen->second.info.tcp_port;
 		connection.peer_id = peer_id;
 		if (!connection.connecting) {
-			queue_frame(connection, Hello{
-				config_.identity.peer_id,
-				config_.identity.display_name});
+			queue_frame(connection, make_hello());
 			connection.hello_sent = true;
 		}
 		connections_.push_back(std::move(connection));
@@ -499,9 +535,7 @@ struct Node::Impl {
 			}
 			connection.connecting = false;
 			if (!connection.hello_sent) {
-				queue_frame(connection, Hello{
-					config_.identity.peer_id,
-					config_.identity.display_name});
+				queue_frame(connection, make_hello());
 				connection.hello_sent = true;
 			}
 		}
@@ -565,12 +599,14 @@ struct Node::Impl {
 			}
 			connection.peer_id = hello->peer_id;
 			connection.display_name = hello->display_name;
+			connection.public_key = hello->public_key;
 			connection.hello_received = true;
 			PeerInfo info;
 			info.peer_id = hello->peer_id;
 			info.display_name = hello->display_name;
 			info.ip = connection.ip;
 			info.tcp_port = connection.tcp_port;
+			info.public_key = hello->public_key;
 			remember_peer(info);
 			flush_queue(hello->peer_id);
 			return;
@@ -580,12 +616,22 @@ struct Node::Impl {
 			return;
 		}
 		if (const auto *text = std::get_if<Text>(&message)) {
+			const auto *key = lookup_public_key(connection.peer_id, &connection);
+			if (!key) {
+				return;
+			}
+			const auto opened = config_.e2e_key->decrypt_from(
+				*key,
+				std::string_view(text->body));
+			if (!opened) {
+				return;
+			}
 			IncomingText incoming;
 			incoming.from_peer_id = connection.peer_id;
 			incoming.from_name = connection.display_name;
 			incoming.msg_id = text->msg_id;
 			incoming.timestamp_ms = text->timestamp_ms;
-			incoming.body = text->body;
+			incoming.body = *opened;
 			texts_.push_back(std::move(incoming));
 			queue_frame(connection, Ack{text->msg_id});
 			return;
@@ -619,6 +665,10 @@ void Node::step(std::chrono::milliseconds timeout) {
 
 const Identity &Node::identity() const {
 	return impl_->config_.identity;
+}
+
+const std::vector<uint8_t> &Node::public_key() const {
+	return impl_->config_.e2e_key->public_key();
 }
 
 uint16_t Node::tcp_port() const {

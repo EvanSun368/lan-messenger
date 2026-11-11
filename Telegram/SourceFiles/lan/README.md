@@ -8,6 +8,7 @@ It does not talk to Telegram's servers.
 - Creates a local identity (random 16-byte peer id + a display name) and stores it in a directory.
 - Discovers other peers with UDP multicast (`239.255.87.42:48710` by default, TTL 1).
 - Exchanges text over direct TCP, with a length-prefixed binary frame and an acknowledgement.
+- Encrypts 1:1 text with the official `tde2e` ECDH envelope (`encrypt_message_for_one`). Public keys travel in announce and Hello. Plaintext is not sent on the wire.
 
 The official intro/session hook lives alongside this transport (`lan_mode.h`,
 `lan_ids.*`, `bridge.*`). A desktop build of this fork starts with a local
@@ -20,20 +21,15 @@ out of scope.
 
 ## Build and test
 
-The module is plain C++17 and only needs a compiler (no Qt, no tdesktop submodules):
+The module is C++17 and does not need Qt. It does link the official
+`tde2e` library (headers and `libtde2e` / `libtdutils`). Point
+`TDE2E_PREFIX` at an install prefix (default `/workspace/deps`):
 
 ```bash
 cd Telegram/SourceFiles/lan
-c++ -std=c++17 -O2 -I. -Itests -o lan_tests \
-  tests/test_main.cpp tests/test_identity.cpp tests/test_protocol.cpp tests/test_node.cpp \
-  tests/test_ids.cpp identity.cpp protocol.cpp node.cpp lan_ids.cpp
-./lan_tests
-
-c++ -std=c++17 -O2 -I. -o lan_node lan_cli.cpp identity.cpp protocol.cpp node.cpp
-./tests/smoke_two_processes.sh
+make test TDE2E_PREFIX=/path/to/tde2e
+make smoke
 ```
-
-If you have GNU make: `make test` and `make smoke`.
 
 ## Two processes on one machine
 
