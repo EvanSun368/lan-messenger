@@ -1,105 +1,83 @@
-# [Telegram Desktop][telegram_desktop] – Official Messenger
+# LanLink
 
-This is the complete source code and the build instructions for the official [Telegram][telegram] messenger desktop client, based on the [Telegram API][telegram_api] and the [MTProto][telegram_proto] secure protocol.
+LanLink 是一个**面向局域网 / 内网的即时通讯工具**，从 [Telegram Desktop (tdesktop)](https://github.com/telegramdesktop/tdesktop) 派生，目标是尽量保留官方桌面客户端的界面与风格，但**不经过任何中心服务器**：同一局域网内的设备互相发现，直接通信。
 
-[![Version](https://badge.fury.io/gh/telegramdesktop%2Ftdesktop.svg)](https://github.com/telegramdesktop/tdesktop/releases)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/Windows./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/MacOS./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Build Status](https://github.com/telegramdesktop/tdesktop/workflows/Linux./badge.svg)](https://github.com/telegramdesktop/tdesktop/actions)
-[![Built with Depot](https://img.shields.io/badge/Built%20with-Depot.dev-46A75A)](https://depot.dev)
+This is a **serverless LAN / intranet messenger** forked from [Telegram Desktop](https://github.com/telegramdesktop/tdesktop). Peers discover each other on the local network and talk directly. There is no Telegram cloud login and no self-hosted MTProto server in the intended design.
 
-[![Preview of Telegram Desktop][preview_image]][preview_image_url]
+**本项目与 Telegram 官方无关，也不是官方客户端。**  
+**Not affiliated with Telegram. This is not the official Telegram Desktop client.**
 
-The source code is published under GPLv3 with OpenSSL exception, the license is available [here][license].
+当前仓库的 `main` 基于官方 tdesktop 的 `dev` 分支，提交 `2b502b26e1b85b502df70c4c048f44f02657af75`（上游 Version 7.4.2）。原有的 LanLink Qt 代码已从 `main` 替换；如需找回，请使用备份标签 `archive/lanlink-0.6.1-pre-tdesktop`（指向 `26676c78a1204e080b8e196ffe678338c2a37c22`）：
 
-## Supported systems
+```bash
+git fetch origin tag archive/lanlink-0.6.1-pre-tdesktop
+git checkout archive/lanlink-0.6.1-pre-tdesktop
+```
 
-The latest version is available for
+上游许可证仍是 GPLv3（含 OpenSSL 例外）。请保留 [LICENSE](LICENSE) 与 [LEGAL](LEGAL)。
 
-* [Windows 7 and above (64 bit)](https://telegram.org/dl/desktop/win64) ([portable](https://telegram.org/dl/desktop/win64_portable))
-* [Windows 7 and above (32 bit)](https://telegram.org/dl/desktop/win) ([portable](https://telegram.org/dl/desktop/win_portable))
-* [macOS 10.13 and above](https://telegram.org/dl/desktop/mac)
-* [Linux static build for 64 bit](https://telegram.org/dl/desktop/linux)
-* [Snap](https://snapcraft.io/telegram-desktop)
-* [Flatpak](https://flathub.org/apps/details/org.telegram.desktop)
+## 现在实际做到哪一步 / What works today
 
-## Old system versions
+已经落地并可测试的是无服务器传输层，位于 [`Telegram/SourceFiles/lan/`](Telegram/SourceFiles/lan/)：
 
-Version **4.9.9** was the last that supports older systems
+- 本地身份：随机 `peer_id` + 本机保存的显示名，不需要手机号或 Telegram 账号
+- 局域网发现：默认 UDP 组播 `239.255.87.42:48710`（TTL 1）；组播被过滤时可用单播 `target`
+- 点对点 TCP 文本消息，带确认
+- 单元测试，以及同一台机器上两个 `lan_node` 进程互发文本的冒烟测试
 
-* [macOS 10.12](https://updates.tdesktop.com/tmac/tsetup.4.9.9.dmg)
-* [Linux with glibc < 2.28 static build](https://updates.tdesktop.com/tlinux/tsetup.4.9.9.tar.xz)
+**尚未完成的部分（请勿误解）：**
 
-Version **2.4.4** was the last that supports older systems
+- **官方 tdesktop 界面还没有接上这条局域网通道。** 若按上游方式直接编译桌面客户端，得到的仍是会登录 Telegram 云的官方路径，请不要把它当成已经可用的内网工具。
+- 文件发送、语音/视频通话、群组、频道等还没有在局域网路径上实现。
+- 当前局域网传输是明文，只适合受信任的内网。
+- 本环境没有做完整的 tdesktop Linux/Windows 桌面构建（官方桌面构建依赖多、耗时长）。
 
-* [OS X 10.10 and 10.11](https://updates.tdesktop.com/tosx/tsetup-osx.2.4.4.dmg)
-* [Linux static build for 32 bit](https://updates.tdesktop.com/tlinux32/tsetup32.2.4.4.tar.xz)
+下一步如何接到会话列表和聊天窗口，见 [docs/lan-serverless.md](docs/lan-serverless.md)。
 
-Version **1.8.15** was the last that supports older systems
+## 先试用局域网文本通道 / Try the LAN text path
 
-* [Windows XP and Vista](https://updates.tdesktop.com/tsetup/tsetup.1.8.15.exe) ([portable](https://updates.tdesktop.com/tsetup/tportable.1.8.15.zip))
-* [OS X 10.8 and 10.9](https://updates.tdesktop.com/tmac/tsetup.1.8.15.dmg)
-* [OS X 10.6 and 10.7](https://updates.tdesktop.com/tmac32/tsetup32.1.8.15.dmg)
+不需要初始化 tdesktop 的子模块。用一台装有 C++17 编译器的机器：
 
-## Third-party
+```bash
+cd Telegram/SourceFiles/lan
+c++ -std=c++17 -O2 -I. -Itests -o lan_tests \
+  tests/test_main.cpp tests/test_identity.cpp tests/test_protocol.cpp tests/test_node.cpp \
+  identity.cpp protocol.cpp node.cpp
+./lan_tests
 
-* Qt 6 ([LGPL](http://doc.qt.io/qt-6/lgpl.html)) and Qt 5.15 ([LGPL](http://doc.qt.io/qt-5/lgpl.html)) slightly patched
-* OpenSSL 3.2.1 ([Apache License 2.0](https://openssl-library.org/source/license/apache-license-2.0.txt))
-* WebRTC ([New BSD License](https://github.com/desktop-app/tg_owt/blob/master/LICENSE))
-* zlib ([zlib License](http://www.zlib.net/zlib_license.html))
-* LZMA SDK 9.20 ([public domain](http://www.7-zip.org/sdk.html))
-* liblzma ([public domain](http://tukaani.org/xz/))
-* Google Breakpad ([License](https://chromium.googlesource.com/breakpad/breakpad/+/master/LICENSE))
-* Google Crashpad ([Apache License 2.0](https://chromium.googlesource.com/crashpad/crashpad/+/master/LICENSE))
-* GYP ([BSD License](https://github.com/bnoordhuis/gyp/blob/master/LICENSE))
-* Ninja ([Apache License 2.0](https://github.com/ninja-build/ninja/blob/master/COPYING))
-* OpenAL Soft ([LGPL](https://github.com/kcat/openal-soft/blob/master/COPYING))
-* Opus codec ([BSD License](http://www.opus-codec.org/license/))
-* FFmpeg ([LGPL](https://www.ffmpeg.org/legal.html))
-* Guideline Support Library ([MIT License](https://github.com/Microsoft/GSL/blob/master/LICENSE))
-* Range-v3 ([Boost License](https://github.com/ericniebler/range-v3/blob/master/LICENSE.txt))
-* Open Sans font ([Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0.html))
-* Vazirmatn font ([SIL Open Font License 1.1](https://github.com/rastikerdar/vazirmatn/blob/master/OFL.txt))
-* Emoji alpha codes ([MIT License](https://github.com/emojione/emojione/blob/master/extras/alpha-codes/LICENSE.md))
-* xxHash ([BSD License](https://github.com/Cyan4973/xxHash/blob/dev/LICENSE))
-* QR Code generator ([MIT License](https://github.com/nayuki/QR-Code-generator#license))
-* CMake ([New BSD License](https://github.com/Kitware/CMake/blob/master/Copyright.txt))
-* Hunspell ([LGPL](https://github.com/hunspell/hunspell/blob/master/COPYING.LESSER))
-* Ada ([Apache License 2.0](https://github.com/ada-url/ada/blob/main/LICENSE-APACHE))
-* zxcvbn-c ([MIT License](https://github.com/tsyrogit/zxcvbn-c/blob/master/LICENSE.txt))
-* twidget ([BSD 3-Clause License](https://github.com/TelegramMessenger/twidget/blob/main/LICENSE))
-* litehtml ([BSD 3-Clause License](https://github.com/litehtml/litehtml/blob/master/LICENSE))
-* Gumbo ([Apache License 2.0](https://github.com/google/gumbo-parser/blob/master/COPYING))
-* QuickJS-ng ([MIT License](https://github.com/quickjs-ng/quickjs/blob/master/LICENSE))
-* FrequencyWords by Hermit Dave ([Creative Commons Attribution-ShareAlike 4.0](https://creativecommons.org/licenses/by-sa/4.0/))
+c++ -std=c++17 -O2 -I. -o lan_node lan_cli.cpp identity.cpp protocol.cpp node.cpp
+```
 
-## Build instructions
+同一台机器上的两个进程（回环、单播发现）：
 
-* [Windows (32-bit and 64-bit)][win]
-* [macOS][mac]
-* [GNU/Linux using Docker][linux]
+```bash
+./lan_node --name Alice --dir /tmp/lan-alice --bind 127.0.0.1 --no-multicast
+./lan_node --name Bob   --dir /tmp/lan-bob   --bind 127.0.0.1 --no-multicast
+# 在各自标准输入里执行：
+#   target 127.0.0.1:<对方输出的 udp 端口>
+#   send Alice hello
+```
 
-[//]: # (LINKS)
-[telegram]: https://telegram.org
-[telegram_desktop]: https://desktop.telegram.org
-[telegram_api]: https://core.telegram.org
-[telegram_proto]: https://core.telegram.org/mtproto
-[license]: LICENSE
-[win]: docs/building-win.md
-[mac]: docs/building-mac.md
-[linux]: docs/building-linux.md
-[preview_image]: https://github.com/telegramdesktop/tdesktop/blob/dev/docs/assets/preview.png "Preview of Telegram Desktop"
-[preview_image_url]: https://raw.githubusercontent.com/telegramdesktop/tdesktop/dev/docs/assets/preview.png
+也可以运行 `./tests/smoke_two_processes.sh`。
 
-## Thanks to
+在真实局域网中，不要加 `--no-multicast` 和 `--bind 127.0.0.1`，默认组播即可互相发现。若交换机或系统过滤了组播，再用 `--target`。
 
-<a href="https://depot.dev">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://depot.dev/assets/brand/1693758816/depot-logo-horizontal-on-dark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://depot.dev/assets/brand/1693758816/depot-logo-horizontal-on-light.svg">
-    <img alt="Depot" src="https://depot.dev/assets/brand/1693758816/depot-logo-horizontal-on-light.svg" width="150">
-  </picture>
-</a>
+## 如何编译完整的桌面客户端 / Building the desktop app
 
-CI infrastructure sponsored by [Depot](https://depot.dev) — fast GitHub Actions runners.
+完整界面仍按上游文档构建（当前尚未切换到局域网模式）：
 
+- [Windows](docs/building-win.md)
+- [macOS](docs/building-mac.md)
+- [GNU/Linux（官方推荐 Docker）](docs/building-linux.md)
+
+先初始化子模块（体积较大，需要时再拉取）：
+
+```bash
+git submodule update --init --recursive
+```
+
+本仓库已关闭 GitHub Actions，避免占用或触发上游自带的大量 CI。
+
+## 第三方与版权
+
+界面与大量底层代码来自 Telegram Desktop 及其第三方依赖，许可证说明见上游 README 历史与各子模块。本仓库新增的局域网模块同样以 GPLv3（含 OpenSSL 例外）发布。
