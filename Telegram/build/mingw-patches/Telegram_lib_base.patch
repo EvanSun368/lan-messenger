@@ -1,0 +1,190 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5ad2ede..72a88c4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -316,3 +316,13 @@ if (DESKTOP_APP_DISABLE_CRASH_REPORTS)
+ endif()
+ 
+ target_link_libraries(lib_base_crash_report_writer PUBLIC desktop-app::lib_base)
++
++if (WIN32 AND NOT MSVC)
++    remove_target_sources(lib_base ${src_loc}
++        base/platform/win/base_system_media_controls_win.cpp
++        base/platform/win/base_system_unlock_win.cpp
++        base/platform/win/base_windows_winrt.cpp
++    )
++    get_filename_component(_lan_stubs "${CMAKE_SOURCE_DIR}/Telegram/SourceFiles/lan/stubs" REALPATH)
++    target_sources(lib_base PRIVATE ${_lan_stubs}/lib_base_winrt_stubs.cpp)
++endif()
+diff --git a/base/platform/win/base_battery_saving_win.cpp b/base/platform/win/base_battery_saving_win.cpp
+index 2301f7a..ac1f8f1 100644
+--- a/base/platform/win/base_battery_saving_win.cpp
++++ b/base/platform/win/base_battery_saving_win.cpp
+@@ -11,6 +11,12 @@
+ 
+ #include <windows.h>
+ 
++#ifndef GUID_POWER_SAVING_STATUS
++// MinGW-w64 headers omit this Win10 GUID (powersetting.h / winnt.h).
++DEFINE_GUID(GUID_POWER_SAVING_STATUS, 0xE00958C0, 0xC213, 0x4ACE, 0xAC, 0x77, 0xFE, 0xCC, 0xED, 0x2E, 0xE7, 0x1E);
++#endif
++
++
+ namespace base::Platform {
+ namespace {
+ 
+diff --git a/base/platform/win/base_windows_safe_library.cpp b/base/platform/win/base_windows_safe_library.cpp
+index 6272ddf..4538e78 100644
+--- a/base/platform/win/base_windows_safe_library.cpp
++++ b/base/platform/win/base_windows_safe_library.cpp
+@@ -86,11 +86,12 @@ BOOL (__stdcall *SetDefaultDllDirectories)(_In_ DWORD DirectoryFlags);
+ namespace details {
+ 
+ void *LoadMethodRaw(HINSTANCE library, LPCSTR name, WORD id) {
+-	const auto result = GetProcAddress(library, name);
++	// MinGW treats FARPROC as a function pointer that does not convert to void*.
++	const auto result = reinterpret_cast<void*>(GetProcAddress(library, name));
+ 	return result
+ 		? result
+ 		: id
+-		? GetProcAddress(library, MAKEINTRESOURCEA(id))
++		? reinterpret_cast<void*>(GetProcAddress(library, MAKEINTRESOURCEA(id)))
+ 		: nullptr;
+ }
+ 
+diff --git a/base/platform/win/base_windows_winrt.h b/base/platform/win/base_windows_winrt.h
+index e0b49e2..b1cac91 100644
+--- a/base/platform/win/base_windows_winrt.h
++++ b/base/platform/win/base_windows_winrt.h
+@@ -10,14 +10,130 @@
+ 
+ #include <source_location>
+ 
+-// winrt::guid defines a constructor from GUID only if knows IUnknown.
+ #include <Unknwnbase.h>
+ 
++#if defined(_MSC_VER)
+ // class has virtual functions, but destructor is not virtual
+ #pragma warning(push)
+ #pragma warning(disable:4265)
+ #include <winrt/base.h>
+ #pragma warning(pop)
++#else
++// MinGW has no C++/WinRT. Enough of the type surface for Try() /
++// TryCreateInstance to compile when WinRT-backed .cpp files are stubbed.
++#include <exception>
++#include <string>
++namespace winrt {
++struct hresult_error : std::exception {
++	HRESULT code() const noexcept { return _code; }
++	std::wstring message() const { return {}; }
++	HRESULT _code = E_FAIL;
++};
++struct guid {
++	uint32_t Data1 = 0;
++	uint16_t Data2 = 0;
++	uint16_t Data3 = 0;
++	uint8_t Data4[8] = {};
++	guid() = default;
++	guid(const GUID &g)
++	: Data1(g.Data1)
++	, Data2(g.Data2)
++	, Data3(g.Data3) {
++		for (int i = 0; i < 8; ++i) Data4[i] = g.Data4[i];
++	}
++	operator GUID() const {
++		GUID g{};
++		g.Data1 = Data1;
++		g.Data2 = Data2;
++		g.Data3 = Data3;
++		for (int i = 0; i < 8; ++i) g.Data4[i] = Data4[i];
++		return g;
++	}
++};
++template <typename Interface>
++struct com_ptr {
++	com_ptr() = default;
++	com_ptr(std::nullptr_t) noexcept {}
++	explicit com_ptr(Interface *p) noexcept { attach_ref(p); }
++	com_ptr(const com_ptr &other) noexcept { attach_ref(other._ptr); }
++	com_ptr(com_ptr &&other) noexcept : _ptr(other._ptr) { other._ptr = nullptr; }
++	~com_ptr() { release(); }
++
++	com_ptr &operator=(std::nullptr_t) noexcept {
++		release();
++		return *this;
++	}
++	com_ptr &operator=(const com_ptr &other) noexcept {
++		if (this != &other) {
++			release();
++			attach_ref(other._ptr);
++		}
++		return *this;
++	}
++	com_ptr &operator=(com_ptr &&other) noexcept {
++		if (this != &other) {
++			release();
++			_ptr = other._ptr;
++			other._ptr = nullptr;
++		}
++		return *this;
++	}
++
++	Interface *get() const noexcept { return _ptr; }
++	explicit operator bool() const noexcept { return _ptr != nullptr; }
++	Interface *operator->() const { return _ptr; }
++	Interface &operator*() const { return *_ptr; }
++	void attach(Interface *p) noexcept {
++		release();
++		_ptr = p;
++	}
++	Interface *detach() noexcept {
++		const auto p = _ptr;
++		_ptr = nullptr;
++		return p;
++	}
++	Interface **put() noexcept {
++		release();
++		return &_ptr;
++	}
++	void *as_abi() const noexcept { return _ptr; }
++	template <typename Other>
++	com_ptr<Other> as() const { return {}; }
++	template <typename Other>
++	com_ptr<Other> try_as() const { return {}; }
++
++	friend bool operator==(const com_ptr &lhs, std::nullptr_t) noexcept {
++		return lhs._ptr == nullptr;
++	}
++	friend bool operator!=(const com_ptr &lhs, std::nullptr_t) noexcept {
++		return lhs._ptr != nullptr;
++	}
++
++	Interface *_ptr = nullptr;
++
++private:
++	void attach_ref(Interface *p) noexcept {
++		_ptr = p;
++		if (_ptr) {
++			_ptr->AddRef();
++		}
++	}
++	void release() noexcept {
++		if (_ptr) {
++			_ptr->Release();
++			_ptr = nullptr;
++		}
++	}
++};
++template <typename Interface>
++com_ptr<Interface> create_instance(
++		const guid &,
++		uint32_t = 0,
++		void * = nullptr) {
++	throw hresult_error{};
++}
++}
++#endif
+ 
+ namespace base::WinRT {
+ namespace details {

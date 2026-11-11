@@ -673,7 +673,11 @@ void MainWindow::initHook() {
 	using namespace base::Platform;
 	auto factory = ComPtr<IUIViewSettingsInterop>();
 	if (SupportsWRL()) {
+#ifdef _MSC_VER
 		ABI::Windows::Foundation::GetActivationFactory(
+#else
+		ABI::Windows::GetActivationFactory(
+#endif
 			StringReferenceWrapper(
 				RuntimeClass_Windows_UI_ViewManagement_UIViewSettings).Get(),
 			&factory);

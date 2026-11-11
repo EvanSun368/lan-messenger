@@ -1080,7 +1080,7 @@ void MainWidget::createCallTopBar(
 		Calls::Call *call,
 		Calls::GroupCall *group) {
 	Expects(call || group);
-
+#ifndef LANLINK_DISABLE_CALLS
 	const auto show = controller()->uiShow();
 	_callTopBar.create(
 		this,
@@ -1102,6 +1102,7 @@ void MainWidget::createCallTopBar(
 		_callTopBarHeight = _contentScrollAddToY = _callTopBar->height();
 		updateControlsGeometry();
 	}
+#endif
 }
 
 void MainWidget::destroyCallTopBar() {

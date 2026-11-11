@@ -79,7 +79,9 @@ void InstallTestAgentCrashHandling() {
 	SetErrorMode(SEM_FAILCRITICALERRORS
 		| SEM_NOGPFAULTERRORBOX
 		| SEM_NOOPENFILEERRORBOX);
+#ifdef _MSC_VER
 	_set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
+#endif
 
 	// Pure-virtual call / invalid CRT parameter -> reported crash, not a dialog.
 	_set_purecall_handler([] {

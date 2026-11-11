@@ -15,6 +15,15 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include <propvarutil.h>
 #include <propkey.h>
 
+#ifndef APPUSERMODEL_STARTPINOPTION_NOPINONINSTALL
+#define APPUSERMODEL_STARTPINOPTION_NOPINONINSTALL 1
+#endif
+#ifndef _MSC_VER
+inline HRESULT PropVariantToCLSID(const PROPVARIANT &propvar, CLSID *clsid) {
+	return PropVariantToGUID(&propvar, clsid);
+}
+#endif
+
 namespace Platform {
 namespace AppUserModelId {
 namespace {

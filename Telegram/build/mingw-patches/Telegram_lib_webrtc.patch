@@ -1,0 +1,36 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d3c786b..0df608f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -96,3 +96,31 @@ if (APPLE)
+         "-framework CoreMedia"
+     )
+ endif()
++
++if (LANLINK_DISABLE_CALLS)
++    remove_target_sources(lib_webrtc ${src_loc}
++        webrtc/webrtc_audio_input_tester.cpp
++        webrtc/webrtc_create_adm.cpp
++        webrtc/webrtc_video_track.cpp
++        webrtc/details/webrtc_environment_video_capture.cpp
++        webrtc/details/webrtc_openal_adm.cpp
++        webrtc/details/webrtc_openal_adm.h
++        webrtc/platform/win/webrtc_environment_win.cpp
++        webrtc/platform/win/webrtc_environment_win.h
++        webrtc/platform/win/webrtc_loopback_adm_win.cpp
++        webrtc/platform/win/webrtc_loopback_adm_win.h
++        webrtc/platform/linux/webrtc_environment_linux.cpp
++        webrtc/platform/linux/webrtc_loopback_adm_linux.cpp
++        webrtc/platform/linux/webrtc_loopback_capture_linux.cpp
++        webrtc/platform/linux/webrtc_system_audio_capture_linux.cpp
++        webrtc/platform/mac/webrtc_environment_mac.mm
++        webrtc/platform/mac/webrtc_loopback_adm_mac.mm
++        webrtc/platform/mac/webrtc_system_audio_capture_mac.mm
++    )
++    get_filename_component(_lan_stubs "${src_loc}/../SourceFiles/lan/stubs" REALPATH)
++    if (NOT EXISTS "${_lan_stubs}/webrtc_stubs.cpp")
++        set(_lan_stubs "${CMAKE_SOURCE_DIR}/Telegram/SourceFiles/lan/stubs")
++    endif()
++    target_sources(lib_webrtc PRIVATE ${_lan_stubs}/webrtc_stubs.cpp)
++    # Dummy tg_owt include dir is not required; stubs avoid those headers.
++endif()

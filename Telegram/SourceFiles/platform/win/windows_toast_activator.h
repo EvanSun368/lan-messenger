@@ -10,9 +10,12 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "base/platform/win/base_windows_rpcndr_h.h"
 #include "windows_toastactivator_h.h"
 
+#if defined(_MSC_VER)
 #include "base/platform/win/wrl/wrl_implements_h.h"
+#endif
 
 // {F11932D3-6110-4BBC-9B02-B2EC07A1BD19}
+#if defined(_MSC_VER)
 class DECLSPEC_UUID("F11932D3-6110-4BBC-9B02-B2EC07A1BD19") ToastActivator
 	: public ::Microsoft::WRL::RuntimeClass<
 		::Microsoft::WRL::RuntimeClassFlags<::Microsoft::WRL::ClassicCom>,
@@ -38,6 +41,11 @@ private:
 	long _ref = 1;
 
 };
+#else
+// MinGW has no WRL RuntimeClass. The UUID is still needed for
+// AppUserModelId comparisons; toast COM activation is not registered.
+class DECLSPEC_UUID("F11932D3-6110-4BBC-9B02-B2EC07A1BD19") ToastActivator {};
+#endif
 
 struct ToastActivation {
 	struct UserInput {

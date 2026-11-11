@@ -1,0 +1,69 @@
+diff --git a/ui/accessible/ui_accessible_widget.cpp b/ui/accessible/ui_accessible_widget.cpp
+index d85c78f..cb67927 100644
+--- a/ui/accessible/ui_accessible_widget.cpp
++++ b/ui/accessible/ui_accessible_widget.cpp
+@@ -373,13 +373,18 @@ bool Widget::clear() {
+ 
+ QList<QAccessible::Attribute> Widget::attributeKeys() const {
+ 	auto result = QList<QAccessible::Attribute>();
++	// QAccessible::Attribute::Orientation was added in Qt 6.11. Official
++	// tdesktop builds Qt 6.11; packaged Debian Qt 6.8/6.10 still compile.
++#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+ 	if (rp()->accessibilityOrientation().has_value()) {
+ 		result.append(QAccessible::Attribute::Orientation);
+ 	}
++#endif
+ 	return result;
+ }
+ 
+ QVariant Widget::attributeValue(QAccessible::Attribute key) const {
++#if QT_VERSION >= QT_VERSION_CHECK(6, 11, 0)
+ 	if (key == QAccessible::Attribute::Orientation) {
+ 		if (const auto orientation = rp()->accessibilityOrientation()) {
+ 			// Plain int by design: the UIA bridge reads this back with
+@@ -388,6 +393,7 @@ QVariant Widget::attributeValue(QAccessible::Attribute key) const {
+ 			return int(*orientation);
+ 		}
+ 	}
++#endif
+ 	return QVariant();
+ }
+ 
+diff --git a/ui/effects/animations.cpp b/ui/effects/animations.cpp
+index bb268d6..e36a2d4 100644
+--- a/ui/effects/animations.cpp
++++ b/ui/effects/animations.cpp
+@@ -107,7 +107,7 @@ void Manager::stop(not_null<Basic*> animation) {
+ 		return;
+ 	}
+ 	const auto value = animation.get();
+-	const auto proj = &ActiveBasicPointer::get;
++	const auto proj = [](const ActiveBasicPointer &p) { return p.get(); };
+ 	auto &list = _updating ? _starting : _active;
+ 	list.erase(ranges::remove(list, value, proj), end(list));
+ 
+@@ -143,7 +143,7 @@ void Manager::update() {
+ 
+ 	if (_removedWhileUpdating) {
+ 		_removedWhileUpdating = false;
+-		const auto proj = &ActiveBasicPointer::get;
++		const auto proj = [](const ActiveBasicPointer &p) { return p.get(); };
+ 		_active.erase(ranges::remove(_active, nullptr, proj), end(_active));
+ 	}
+ 
+diff --git a/ui/platform/win/ui_window_title_win.cpp b/ui/platform/win/ui_window_title_win.cpp
+index 0311cc3..f227096 100644
+--- a/ui/platform/win/ui_window_title_win.cpp
++++ b/ui/platform/win/ui_window_title_win.cpp
+@@ -231,7 +231,10 @@ int TitleWidget::additionalPadding() const {
+ }
+ 
+ rpl::producer<int> TitleWidget::additionalPaddingValue() const {
+-	return _paddingHelper ? _paddingHelper->padding.value() : rpl::single(0);
++	if (_paddingHelper) {
++		return _paddingHelper->padding.value();
++	}
++	return rpl::single(0);
+ }
+ 
+ void TitleWidget::setAdditionalPadding(int padding) {

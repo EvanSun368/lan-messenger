@@ -788,3 +788,15 @@ PRIVATE
     desktop-app::external_minizip
     desktop-app::external_webrtc
 )
+
+if (LANLINK_DISABLE_CALLS)
+    remove_target_sources(td_ui ${src_loc}
+        calls/group/ui/desktop_capture_choose_source.cpp
+        calls/group/ui/desktop_capture_choose_source.h
+    )
+endif()
+
+if (WIN32 AND NOT MSVC)
+    set_source_files_properties(${src_loc}/platform/win/current_geo_location_win.cpp PROPERTIES HEADER_FILE_ONLY TRUE)
+    target_sources(td_ui PRIVATE ${src_loc}/lan/stubs/current_geo_location_mingw_stub.cpp)
+endif()

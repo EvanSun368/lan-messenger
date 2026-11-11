@@ -3124,6 +3124,7 @@ void OverlayWidget::assignMediaPointer(
 	_photoMedia = nullptr;
 
 	_videoStream = nullptr;
+#ifndef LANLINK_DISABLE_CALLS
 	_videoStream = std::make_unique<VideoStream>(
 		_body,
 		_surface.get(),
@@ -3140,6 +3141,7 @@ void OverlayWidget::assignMediaPointer(
 		stories->updateVideoStream(_videoStream->call());
 		_videoStream->toggleCommentsOn(stories->commentsShownValue());
 	}
+#endif
 	_widget->lower();
 }
 
