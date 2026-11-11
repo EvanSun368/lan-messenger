@@ -1,29 +1,44 @@
 # Integration verification: 2026-11-11
 
-## Current status
+## Final serial matrix: passed
 
-Source is frozen for the Telegram UI / mail OAuth-polling-reply / managed-VPN
-integration. This is a review branch, not a production release or merge request
-that has passed all platform acceptance. The final FULL/default aggregate and DPI
-matrix is still running; the record will be updated when its results are known.
+The final frozen-source matrix finished successfully on Linux with Qt 6.11.2,
+GCC 14, CMake and the offscreen Qt platform. Both configurations built all targets
+serially; tests used isolated HOME/XDG settings and local fake mail servers.
 
-Verified before the first source commit:
+- FULL original-control build: 34/34 CTest groups passed, zero failures, 89.96 seconds.
+- Default Qt build: 34/34 CTest groups passed, zero failures, 58.74 seconds.
+- FULL at 125%: chat UI 26 cases passed (18.347s); mail UI 21 passed (4.528s).
+- FULL at 150%: chat UI 26 cases passed (18.251s); mail UI 21 passed (4.947s).
+- FULL at 200%: chat UI 26 cases passed (19.855s); mail UI 21 passed (5.035s).
 
-- Default Qt 6.11.2: all targets built; 34/34 CTest groups passed, zero failures,
-  58.36 seconds. See `review/integration-default-ctest.log`.
-- FULL original Telegram controls: mail-window suite 21/21 QtTest cases passed,
-  4.575 seconds, including setup/cleanup. See `review/integration-full-mailwindow.log`.
-- Final FULL mail screenshots were inspected after fixing original-button host
-  padding and disabled-state visibility. They use labelled mock accounts, not real
-  mailboxes. See `screenshots/mail-window-{inbox,compose}-mock.png`.
-- The earlier standalone OAuth suite passed 51 cases. This focused result does
-  not substitute for the currently running aggregate matrix.
+QtTest case totals include setup/cleanup. The FULL aggregate has one internal
+skip: real OS interface enumeration is unavailable in the sandbox (AF_NETLINK).
+The default aggregate has 24 internal skips, including original-control-only cases
+and the same unavailable interface enumeration. The 34 passing CTest groups do
+not mean those skipped paths were exercised. All three FULL chat/mail DPI suites
+have zero internal skips.
 
-The FULL rebuild had two zero-byte object files after an interrupted earlier
-process. Only those rebuildable objects were removed and regenerated. No upstream
-source was stubbed or altered to bypass missing symbols. FULL-only button sizing
-was then fixed and its mail suite rerun. The final build is serial to avoid the
-previous memory pressure from overlapping compilations.
+Full-mode focused totals in this same aggregate include OAuth 51, MIME 14, mail
+transport 19, sync state 7 and mail-window 21 cases. The real interface/VPN, native
+notification and provider limitations below remain open.
+
+Logs and the PASSED marker: `../full-ui-probe/verification-github/`. They include
+build output, each aggregate CTest summary, detailed per-case output and all six
+DPI logs. Earlier focused baseline logs are retained under `review/` and are not
+substitutes for this final matrix. Source-scope/licensing files describe which
+controls are original upstream code and which controllers/layouts are custom.
+
+The earlier interrupted build left two zero-byte object files. Those generated
+objects were rebuilt from the genuine upstream sources, with no source stub or
+disabled test. Original mail-button host padding was fixed and the final source
+was exercised again in the matrix above.
+
+Publication is a separate GitHub branch, not a merge or executable release. The
+first source commit is `d2bbb56f97699c1e66a1ef229e1e404f87e6bb62`; this record is
+added/updated by a follow-up verification commit. No GitHub Actions run or status
+check existed for that first source commit, so local passes are not called CI
+passes. No pull request has been created.
 
 ## Source and credential review
 

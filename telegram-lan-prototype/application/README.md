@@ -37,7 +37,7 @@ Final integration verification is recorded in [INTEGRATION_VALIDATION.md](INTEGR
 Older counts below are historical stage records, not acceptance of this revision.
 No real mailbox credentials or external mail were used. Generate the disposable
 TLS fixture locally before transport tests; its private key is never committed.
-The GitHub integration is reviewed on a separate branch/PR; no merge, main overwrite,
+The GitHub integration is reviewed on a separate branch; no merge, main overwrite,
 Windows binary or executable release is implied.
 
 This is a **partial source-port experiment**, not a full Telegram Desktop fork UI,

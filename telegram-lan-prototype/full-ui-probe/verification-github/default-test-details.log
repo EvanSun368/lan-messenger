@@ -1,0 +1,1046 @@
+Start testing: Nov 11 12:43 JST
+----------------------------------------------------------
+1/34 Testing: core_tests
+1/34 Test: core_tests
+Command: "/tmp/telegram-app-build/core_tests"
+Directory: /tmp/telegram-app-build
+"core_tests" start time: Nov 11 12:43 JST
+Output:
+----------------------------------------------------------
+********* Start testing of CoreTests *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : CoreTests::initTestCase()
+PASS   : CoreTests::longMessages(ascii-32k)
+PASS   : CoreTests::longMessages(utf8-cjk-120k)
+PASS   : CoreTests::longMessages(emoji-boundary)
+PASS   : CoreTests::longMessages(ascii-boundary)
+PASS   : CoreTests::longMessages(escaped-boundary)
+PASS   : CoreTests::longMessages(multiline)
+PASS   : CoreTests::longGroupOfflineAndLimits()
+PASS   : CoreTests::explicitRemoteRejectionDoesNotRetry()
+PASS   : CoreTests::transientRemoteRejectionRetries()
+PASS   : CoreTests::discoveryAndMessage()
+PASS   : CoreTests::groupRoundTrip()
+PASS   : CoreTests::offlineRestart()
+PASS   : CoreTests::profileAndImage()
+PASS   : CoreTests::duplicateAndMalformedGroup()
+PASS   : CoreTests::rejectionAndFraming()
+PASS   : CoreTests::cleanupTestCase()
+Totals: 17 passed, 0 failed, 0 skipped, 0 blacklisted, 17488ms
+********* Finished testing of CoreTests *********
+<end of output>
+Test time =  17.51 sec
+----------------------------------------------------------
+Test Passed.
+"core_tests" end time: Nov 11 12:44 JST
+"core_tests" time elapsed: 00:00:17
+----------------------------------------------------------
+
+2/34 Testing: test_chatfeatures
+2/34 Test: test_chatfeatures
+Command: "/tmp/telegram-app-build/test_chatfeatures"
+Directory: /tmp/telegram-app-build
+"test_chatfeatures" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of ChatFeaturesTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : ChatFeaturesTest::initTestCase()
+PASS   : ChatFeaturesTest::unreadLifecycle()
+QWARN  : ChatFeaturesTest::emojiCatalogAndSelection() This plugin does not support propagateSizeHints()
+PASS   : ChatFeaturesTest::emojiCatalogAndSelection()
+PASS   : ChatFeaturesTest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 67ms
+********* Finished testing of ChatFeaturesTest *********
+<end of output>
+Test time =   0.09 sec
+----------------------------------------------------------
+Test Passed.
+"test_chatfeatures" end time: Nov 11 12:44 JST
+"test_chatfeatures" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/34 Testing: test_chatmailexport
+3/34 Test: test_chatmailexport
+Command: "/tmp/telegram-app-build/test_chatmailexport"
+Directory: /tmp/telegram-app-build
+"test_chatmailexport" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of ChatMailExportTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : ChatMailExportTest::initTestCase()
+PASS   : ChatMailExportTest::maximumChatTextFitsWithExportHeaders()
+PASS   : ChatMailExportTest::selectedOnlyAndStableOrder()
+PASS   : ChatMailExportTest::failClosed()
+PASS   : ChatMailExportTest::binaryOnlyExplainedAndPathsNeverCopied()
+PASS   : ChatMailExportTest::limitsAndNoPartialDraft()
+PASS   : ChatMailExportTest::missingTimeAndOutgoingSenderAreExplicit()
+PASS   : ChatMailExportTest::cleanupTestCase()
+Totals: 8 passed, 0 failed, 0 skipped, 0 blacklisted, 6ms
+********* Finished testing of ChatMailExportTest *********
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"test_chatmailexport" end time: Nov 11 12:44 JST
+"test_chatmailexport" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/34 Testing: test_contactmailbook
+4/34 Test: test_contactmailbook
+Command: "/tmp/telegram-app-build/test_contactmailbook"
+Directory: /tmp/telegram-app-build
+"test_contactmailbook" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of ContactMailBookTests *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : ContactMailBookTests::initTestCase()
+PASS   : ContactMailBookTests::validationAndIndependentMappings()
+PASS   : ContactMailBookTests::failurePreservesLastKnownMapping()
+SKIP   : ContactMailBookTests::actualProfileEditingRemainsLocalAndKeepsFailedDraft() Original profile editor requires FULL mode
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_contactmailbook.cpp(41)]
+PASS   : ContactMailBookTests::cleanupTestCase()
+Totals: 4 passed, 0 failed, 1 skipped, 0 blacklisted, 3ms
+********* Finished testing of ContactMailBookTests *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_contactmailbook" end time: Nov 11 12:44 JST
+"test_contactmailbook" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/34 Testing: test_delivery_presentation
+5/34 Test: test_delivery_presentation
+Command: "/tmp/telegram-app-build/test_delivery_presentation"
+Directory: /tmp/telegram-app-build
+"test_delivery_presentation" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of DeliveryPresentationTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : DeliveryPresentationTest::initTestCase()
+PASS   : DeliveryPresentationTest::neverInventsReadOrMissingEvidence()
+PASS   : DeliveryPresentationTest::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of DeliveryPresentationTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_delivery_presentation" end time: Nov 11 12:44 JST
+"test_delivery_presentation" time elapsed: 00:00:00
+----------------------------------------------------------
+
+6/34 Testing: test_delivery_receipts
+6/34 Test: test_delivery_receipts
+Command: "/tmp/telegram-app-build/test_delivery_receipts"
+Directory: /tmp/telegram-app-build
+"test_delivery_receipts" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of DeliveryReceiptsTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : DeliveryReceiptsTest::initTestCase()
+PASS   : DeliveryReceiptsTest::groupPartialReceiptAndRestart()
+PASS   : DeliveryReceiptsTest::permanentRejectionIsNotReceipt()
+PASS   : DeliveryReceiptsTest::failedReceiptCommitRetainsRetryAndNoSuccess()
+PASS   : DeliveryReceiptsTest::oldPendingAckStillUnknown()
+PASS   : DeliveryReceiptsTest::oldHistoryNeverInfersSuccess()
+PASS   : DeliveryReceiptsTest::cleanupTestCase()
+Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 5103ms
+********* Finished testing of DeliveryReceiptsTest *********
+<end of output>
+Test time =   5.12 sec
+----------------------------------------------------------
+Test Passed.
+"test_delivery_receipts" end time: Nov 11 12:44 JST
+"test_delivery_receipts" time elapsed: 00:00:05
+----------------------------------------------------------
+
+7/34 Testing: test_dialogs_inner
+7/34 Test: test_dialogs_inner
+Command: "/tmp/telegram-app-build/test_dialogs_inner"
+Directory: /tmp/telegram-app-build
+"test_dialogs_inner" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of DialogsInnerTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : DialogsInnerTest::initTestCase()
+SKIP   : DialogsInnerTest::actualPointerKeyboardFilteringAndScroll() Original dialog list requires FULL Telegram lib_ui
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_dialogs_inner.cpp(13)]
+PASS   : DialogsInnerTest::cleanupTestCase()
+Totals: 2 passed, 0 failed, 1 skipped, 0 blacklisted, 1ms
+********* Finished testing of DialogsInnerTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_dialogs_inner" end time: Nov 11 12:44 JST
+"test_dialogs_inner" time elapsed: 00:00:00
+----------------------------------------------------------
+
+8/34 Testing: test_files
+8/34 Test: test_files
+Command: "/tmp/telegram-app-build/test_files"
+Directory: /tmp/telegram-app-build
+"test_files" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of FileTests *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : FileTests::initTestCase()
+QWARN  : FileTests::resultReceiptsPersistAndRejectForgery() 传输状态无法保存，重启后记录可能丢失：No such file or directory
+PASS   : FileTests::resultReceiptsPersistAndRejectForgery()
+PASS   : FileTests::corruptReceiverReportsFailureNotCompletion()
+PASS   : FileTests::rejectionProgressMayDestroyService()
+PASS   : FileTests::names()
+PASS   : FileTests::transfer()
+PASS   : FileTests::shareRevocation()
+PASS   : FileTests::restartResume()
+PASS   : FileTests::noOverwrite()
+PASS   : FileTests::pythonInterop()
+PASS   : FileTests::destroyWithPendingRequests()
+PASS   : FileTests::hashSaturationQueues()
+PASS   : FileTests::busyVerificationPreservesPart()
+PASS   : FileTests::cancelDuringVerification(pause then resume)
+PASS   : FileTests::cancelDuringVerification(reject never publishes)
+PASS   : FileTests::actualSharedDownloadAndContext()
+PASS   : FileTests::hashCallbackCanDestroyService()
+PASS   : FileTests::duplicateFetchDoesNotReplaceActiveSocket()
+PASS   : FileTests::offerAckPrecedesModalNotification()
+QWARN  : FileTests::persistenceFailureIsReportedAndRecoverable() 传输状态无法保存，重启后记录可能丢失：Filename refers to a directory
+PASS   : FileTests::persistenceFailureIsReportedAndRecoverable()
+PASS   : FileTests::recordNotificationCanDestroyService()
+PASS   : FileTests::groupFileFirstMessageAndContextValidation()
+PASS   : FileTests::legacyReceiverGroupRouteRemainsUnconfirmed()
+PASS   : FileTests::groupNotificationMayDestroyReceiverAndService()
+PASS   : FileTests::sharedResponseCannotRedirectIdentityOrGroup(different-known-peer)
+PASS   : FileTests::sharedResponseCannotRedirectIdentityOrGroup(unexpected-group-context)
+PASS   : FileTests::sharedResponseCannotRedirectIdentityOrGroup(wrong-type)
+PASS   : FileTests::paths()
+PASS   : FileTests::cleanupTestCase()
+Totals: 29 passed, 0 failed, 0 skipped, 0 blacklisted, 4342ms
+********* Finished testing of FileTests *********
+<end of output>
+Test time =   4.36 sec
+----------------------------------------------------------
+Test Passed.
+"test_files" end time: Nov 11 12:44 JST
+"test_files" time elapsed: 00:00:04
+----------------------------------------------------------
+
+9/34 Testing: test_history_bubble
+9/34 Test: test_history_bubble
+Command: "/tmp/telegram-app-build/test_history_bubble"
+Directory: /tmp/telegram-app-build
+"test_history_bubble" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of HistoryBubbleTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : HistoryBubbleTest::initTestCase()
+SKIP   : HistoryBubbleTest::requiresOriginalUi() Original tail masks require FULL UI
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_history_bubble.cpp(63)]
+PASS   : HistoryBubbleTest::cleanupTestCase()
+Totals: 2 passed, 0 failed, 1 skipped, 0 blacklisted, 2ms
+********* Finished testing of HistoryBubbleTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_history_bubble" end time: Nov 11 12:44 JST
+"test_history_bubble" time elapsed: 00:00:00
+----------------------------------------------------------
+
+10/34 Testing: test_history_paging
+10/34 Test: test_history_paging
+Command: "/tmp/telegram-app-build/test_history_paging"
+Directory: /tmp/telegram-app-build
+"test_history_paging" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of HistoryPagingTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : HistoryPagingTest::initTestCase()
+PASS   : HistoryPagingTest::stableTiesAndConcurrentInsert()
+PASS   : HistoryPagingTest::cursorSurvivesRestartAndInvalidIsExplicit()
+PASS   : HistoryPagingTest::fileMappingAndOtherConversation()
+PASS   : HistoryPagingTest::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 35ms
+********* Finished testing of HistoryPagingTest *********
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"test_history_paging" end time: Nov 11 12:44 JST
+"test_history_paging" time elapsed: 00:00:00
+----------------------------------------------------------
+
+11/34 Testing: test_history_presentation
+11/34 Test: test_history_presentation
+Command: "/tmp/telegram-app-build/test_history_presentation"
+Directory: /tmp/telegram-app-build
+"test_history_presentation" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of HistoryPresentationTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : HistoryPresentationTest::initTestCase()
+PASS   : HistoryPresentationTest::ordinaryChatIdentityAndBubbleGrouping()
+PASS   : HistoryPresentationTest::groupingTimeAndSender()
+PASS   : HistoryPresentationTest::displayTimezoneAndDates()
+PASS   : HistoryPresentationTest::boundariesAndSourceFlags()
+PASS   : HistoryPresentationTest::sequenceAndBadgeGeometry()
+PASS   : HistoryPresentationTest::cleanupTestCase()
+Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 58ms
+********* Finished testing of HistoryPresentationTest *********
+<end of output>
+Test time =   0.08 sec
+----------------------------------------------------------
+Test Passed.
+"test_history_presentation" end time: Nov 11 12:44 JST
+"test_history_presentation" time elapsed: 00:00:00
+----------------------------------------------------------
+
+12/34 Testing: test_lan_history_list
+12/34 Test: test_lan_history_list
+Command: "/tmp/telegram-app-build/test_lan_history_list"
+Directory: /tmp/telegram-app-build
+"test_lan_history_list" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of HistoryListTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : HistoryListTest::initTestCase()
+SKIP   : HistoryListTest::requiresOriginalUi() Original history list requires LANLINK_FULL_TELEGRAM_UI
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_lan_history_list.cpp(94)]
+PASS   : HistoryListTest::cleanupTestCase()
+Totals: 2 passed, 0 failed, 1 skipped, 0 blacklisted, 1ms
+********* Finished testing of HistoryListTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_lan_history_list" end time: Nov 11 12:44 JST
+"test_lan_history_list" time elapsed: 00:00:00
+----------------------------------------------------------
+
+13/34 Testing: test_links
+13/34 Test: test_links
+Command: "/tmp/telegram-app-build/test_links"
+Directory: /tmp/telegram-app-build
+"test_links" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of Links *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : Links::initTestCase()
+PASS   : Links::validation()
+PASS   : Links::metadataText()
+PASS   : Links::addresses()
+PASS   : Links::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 2ms
+********* Finished testing of Links *********
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"test_links" end time: Nov 11 12:44 JST
+"test_links" time elapsed: 00:00:00
+----------------------------------------------------------
+
+14/34 Testing: test_mailaccounts
+14/34 Test: test_mailaccounts
+Command: "/tmp/telegram-app-build/test_mailaccounts"
+Directory: /tmp/telegram-app-build
+"test_mailaccounts" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of MailAccountTests *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : MailAccountTests::initTestCase()
+PASS   : MailAccountTests::templatesAndTlsValidation()
+PASS   : MailAccountTests::gmailAuthenticationChoicesRemainDistinct()
+PASS   : MailAccountTests::personalOutlookUsesDistinctPinnedEndpoints()
+PASS   : MailAccountTests::oauthConfigurationPersistsOnlyPublicRegistration()
+PASS   : MailAccountTests::multiAccountPersistenceNeverContainsSecrets()
+PASS   : MailAccountTests::malformedSecretFieldsAndFailedWritesPreserveState()
+PASS   : MailAccountTests::platformFailsClosedWithoutSupportedBackend()
+PASS   : MailAccountTests::cleanupTestCase()
+Totals: 9 passed, 0 failed, 0 skipped, 0 blacklisted, 12ms
+********* Finished testing of MailAccountTests *********
+<end of output>
+Test time =   0.04 sec
+----------------------------------------------------------
+Test Passed.
+"test_mailaccounts" end time: Nov 11 12:44 JST
+"test_mailaccounts" time elapsed: 00:00:00
+----------------------------------------------------------
+
+15/34 Testing: test_mailmime
+15/34 Test: test_mailmime
+Command: "/tmp/telegram-app-build/test_mailmime"
+Directory: /tmp/telegram-app-build
+"test_mailmime" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of MailMimeTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : MailMimeTest::initTestCase()
+PASS   : MailMimeTest::replyMetadataRoundtrip()
+PASS   : MailMimeTest::replyDraftIsSafeAndUnsent()
+PASS   : MailMimeTest::rejectsMaliciousReplyMetadata()
+PASS   : MailMimeTest::boundedReferences()
+PASS   : MailMimeTest::emptyBodyAndAttachment()
+PASS   : MailMimeTest::roundtripUtf8AndBinary()
+PASS   : MailMimeTest::longUnicodeHeader()
+PASS   : MailMimeTest::rejectsHeaderInjection()
+PASS   : MailMimeTest::htmlAndQuotedPrintable()
+PASS   : MailMimeTest::traceHeadersAndStandardFilename()
+PASS   : MailMimeTest::limitsAndMalformed()
+PASS   : MailMimeTest::nestedAlternativeAndBinaryAttachment()
+PASS   : MailMimeTest::cleanupTestCase()
+Totals: 14 passed, 0 failed, 0 skipped, 0 blacklisted, 20ms
+********* Finished testing of MailMimeTest *********
+<end of output>
+Test time =   0.05 sec
+----------------------------------------------------------
+Test Passed.
+"test_mailmime" end time: Nov 11 12:44 JST
+"test_mailmime" time elapsed: 00:00:00
+----------------------------------------------------------
+
+16/34 Testing: test_mailoauth
+16/34 Test: test_mailoauth
+Command: "/tmp/telegram-app-build/test_mailoauth"
+Directory: /tmp/telegram-app-build
+"test_mailoauth" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of MailOAuthTests *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : MailOAuthTests::initTestCase()
+PASS   : MailOAuthTests::pkceVector()
+PASS   : MailOAuthTests::authorizationUrl(Google)
+PASS   : MailOAuthTests::authorizationUrl(Microsoft)
+PASS   : MailOAuthTests::authorizationUrl(Microsoft personal)
+PASS   : MailOAuthTests::productionAuthorizationUrlsArePinnedWithoutOpeningBrowser()
+PASS   : MailOAuthTests::invalidCallbacks(state)
+PASS   : MailOAuthTests::invalidCallbacks(method)
+PASS   : MailOAuthTests::invalidCallbacks(host)
+PASS   : MailOAuthTests::invalidCallbacks(path)
+PASS   : MailOAuthTests::invalidCallbacks(duplicate-state)
+PASS   : MailOAuthTests::invalidCallbacks(duplicate-code)
+PASS   : MailOAuthTests::invalidCallbacks(duplicate-host)
+PASS   : MailOAuthTests::invalidCallbacks(fragment)
+PASS   : MailOAuthTests::invalidCallbacks(absolute-target)
+PASS   : MailOAuthTests::invalidCallbacks(http-version)
+PASS   : MailOAuthTests::sequentialInvalidCallbacksDoNotExhaustListener()
+PASS   : MailOAuthTests::codeExchangeAndPersistence()
+PASS   : MailOAuthTests::refreshRotation(gmail-retain)
+PASS   : MailOAuthTests::refreshRotation(gmail-rotate)
+PASS   : MailOAuthTests::refreshRotation(outlook-retain)
+PASS   : MailOAuthTests::refreshRotation(outlook-rotate)
+PASS   : MailOAuthTests::refreshRotation(outlook-personal-retain)
+PASS   : MailOAuthTests::refreshRotation(outlook-personal-rotate)
+PASS   : MailOAuthTests::credentialBinding()
+PASS   : MailOAuthTests::cancellationAndStaleCallback()
+PASS   : MailOAuthTests::timeout()
+PASS   : MailOAuthTests::callbackReplay()
+PASS   : MailOAuthTests::validGrantedScopes()
+PASS   : MailOAuthTests::refusal()
+PASS   : MailOAuthTests::invalidTokenResponse(invalid-json)
+PASS   : MailOAuthTests::invalidTokenResponse(array)
+PASS   : MailOAuthTests::invalidTokenResponse(http-error)
+PASS   : MailOAuthTests::invalidTokenResponse(oversize)
+PASS   : MailOAuthTests::invalidTokenResponse(wrong-type)
+PASS   : MailOAuthTests::invalidTokenResponse(empty-access)
+PASS   : MailOAuthTests::invalidTokenResponse(control-access)
+PASS   : MailOAuthTests::invalidTokenResponse(huge-access)
+PASS   : MailOAuthTests::invalidTokenResponse(expires-string)
+PASS   : MailOAuthTests::invalidTokenResponse(expires-small)
+PASS   : MailOAuthTests::invalidTokenResponse(expires-large)
+PASS   : MailOAuthTests::invalidTokenResponse(expires-fraction)
+PASS   : MailOAuthTests::invalidTokenResponse(empty-refresh)
+PASS   : MailOAuthTests::invalidTokenResponse(numeric-refresh)
+PASS   : MailOAuthTests::invalidTokenResponse(control-refresh)
+PASS   : MailOAuthTests::invalidTokenResponse(missing-mail-scope)
+PASS   : MailOAuthTests::invalidTokenResponse(scope-type)
+PASS   : MailOAuthTests::newGrantRequiresRefresh()
+PASS   : MailOAuthTests::redirectsNotFollowed()
+PASS   : MailOAuthTests::endpointOverrideRestrictions()
+PASS   : MailOAuthTests::cleanupTestCase()
+Totals: 51 passed, 0 failed, 0 skipped, 0 blacklisted, 4569ms
+********* Finished testing of MailOAuthTests *********
+<end of output>
+Test time =   4.60 sec
+----------------------------------------------------------
+Test Passed.
+"test_mailoauth" end time: Nov 11 12:44 JST
+"test_mailoauth" time elapsed: 00:00:04
+----------------------------------------------------------
+
+17/34 Testing: test_mailsyncstate
+17/34 Test: test_mailsyncstate
+Command: "/tmp/telegram-app-build/test_mailsyncstate"
+Directory: /tmp/telegram-app-build
+"test_mailsyncstate" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of MailSyncStateTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : MailSyncStateTest::initTestCase()
+PASS   : MailSyncStateTest::baselineAndDeduplication()
+PASS   : MailSyncStateTest::emptyBaselineRolloverAndIdentity()
+PASS   : MailSyncStateTest::invalidResultsDoNotAdvance()
+PASS   : MailSyncStateTest::roundtripAndMalformedFileAreAtomic()
+PASS   : MailSyncStateTest::boundsAndCanonicalValidity()
+PASS   : MailSyncStateTest::cleanupTestCase()
+Totals: 7 passed, 0 failed, 0 skipped, 0 blacklisted, 5ms
+********* Finished testing of MailSyncStateTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_mailsyncstate" end time: Nov 11 12:44 JST
+"test_mailsyncstate" time elapsed: 00:00:00
+----------------------------------------------------------
+
+18/34 Testing: test_mailtransport
+18/34 Test: test_mailtransport
+Command: "/tmp/telegram-app-build/test_mailtransport"
+Directory: /tmp/telegram-app-build
+"test_mailtransport" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of MailTransportTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : MailTransportTest::initTestCase()
+PASS   : MailTransportTest::validityIsRequiredBeforeSearchOrFetch()
+PASS   : MailTransportTest::rolloverNeverFetchesStaleUid()
+PASS   : MailTransportTest::boundedHeaderFetchAndMetadata()
+PASS   : MailTransportTest::invalidUidLimits()
+PASS   : MailTransportTest::oauthSuccessAndRejection()
+PASS   : MailTransportTest::oauthNeverBypassesTls()
+PASS   : MailTransportTest::smtpRequiresFinalAckAndPreservesMime()
+PASS   : MailTransportTest::disconnectedBeforeFinalDataAckIsNotSuccess()
+PASS   : MailTransportTest::imapListsAndFetchesSplitBinaryLiteral()
+PASS   : MailTransportTest::incorrectUidCannotReturnOtherMessage()
+PASS   : MailTransportTest::startTlsNeverDowngradesOrAuthenticates()
+PASS   : MailTransportTest::selfSignedTlsIsRejectedBeforeCredentials()
+PASS   : MailTransportTest::explicitAuthenticationRejectionIsFailure()
+PASS   : MailTransportTest::cancellationAndTimeoutAreBounded()
+PASS   : MailTransportTest::trustedFixtureTlsAndStartTlsActuallyTransmitEncrypted()
+PASS   : MailTransportTest::fetchedCallbackReentryKeepsOriginalUid()
+PASS   : MailTransportTest::invalidAndUnsafeInputsNeverConnect()
+PASS   : MailTransportTest::cleanupTestCase()
+Totals: 19 passed, 0 failed, 0 skipped, 0 blacklisted, 2264ms
+********* Finished testing of MailTransportTest *********
+<end of output>
+Test time =   2.29 sec
+----------------------------------------------------------
+Test Passed.
+"test_mailtransport" end time: Nov 11 12:44 JST
+"test_mailtransport" time elapsed: 00:00:02
+----------------------------------------------------------
+
+19/34 Testing: test_mailwindow
+19/34 Test: test_mailwindow
+Command: "/tmp/telegram-app-build/test_mailwindow"
+Directory: /tmp/telegram-app-build
+"test_mailwindow" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of MailWindowTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : MailWindowTest::initTestCase()
+PASS   : MailWindowTest::enabledAccountPollsAndStopsOnShutdown()
+PASS   : MailWindowTest::newMailDedupesAndUidValidityResetsSilently()
+PASS   : MailWindowTest::backgroundAccountCannotPopulateOtherAccountReader()
+QWARN  : MailWindowTest::replyDraftUsesReplyToAndKeepsAccountsSeparate() This plugin does not support propagateSizeHints()
+PASS   : MailWindowTest::replyDraftUsesReplyToAndKeepsAccountsSeparate()
+PASS   : MailWindowTest::disablingSyncDuringHeaderGapStopsFurtherRequests()
+PASS   : MailWindowTest::malformedHeaderDoesNotBlockLaterSummary()
+SKIP   : MailWindowTest::fullModeUsesOriginalControlsAndLists() Original lib_ui is only linked in FULL mode.
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_mailwindow.cpp(97)]
+PASS   : MailWindowTest::constructionAndAccountSelectionNeverConnect()
+PASS   : MailWindowTest::unavailableSecretStoreFailsClosed()
+PASS   : MailWindowTest::explicitReadUsesSafePlainTextAndUid()
+QWARN  : MailWindowTest::closeNeedsConfirmationAndNoPreservesPendingOperation() This plugin does not support propagateSizeHints()
+QWARN  : MailWindowTest::closeNeedsConfirmationAndNoPreservesPendingOperation() This plugin does not support propagateSizeHints()
+QWARN  : MailWindowTest::closeNeedsConfirmationAndNoPreservesPendingOperation() This plugin does not support propagateSizeHints()
+PASS   : MailWindowTest::closeNeedsConfirmationAndNoPreservesPendingOperation()
+PASS   : MailWindowTest::fetchUidMismatchClearsBodyAndAttachments()
+QWARN  : MailWindowTest::sendNeedsExplicitConfirmationAndPreservesDraftOnUnknown() This plugin does not support propagateSizeHints()
+QWARN  : MailWindowTest::sendNeedsExplicitConfirmationAndPreservesDraftOnUnknown() This plugin does not support propagateSizeHints()
+QWARN  : MailWindowTest::sendNeedsExplicitConfirmationAndPreservesDraftOnUnknown() This plugin does not support propagateSizeHints()
+QWARN  : MailWindowTest::sendNeedsExplicitConfirmationAndPreservesDraftOnUnknown() This plugin does not support propagateSizeHints()
+PASS   : MailWindowTest::sendNeedsExplicitConfirmationAndPreservesDraftOnUnknown()
+QWARN  : MailWindowTest::attachmentIsIncludedAndListedInConfirmation() This plugin does not support propagateSizeHints()
+QWARN  : MailWindowTest::attachmentIsIncludedAndListedInConfirmation() This plugin does not support propagateSizeHints()
+PASS   : MailWindowTest::attachmentIsIncludedAndListedInConfirmation()
+QWARN  : MailWindowTest::receivedAttachmentSavesOnlyOnExplicitChoiceAndClearsOnSwitch() This plugin does not support propagateSizeHints()
+PASS   : MailWindowTest::receivedAttachmentSavesOnlyOnExplicitChoiceAndClearsOnSwitch()
+QWARN  : MailWindowTest::externalDraftNeverSendsAndRequiresExplicitReplacement() This plugin does not support propagateSizeHints()
+PASS   : MailWindowTest::externalDraftNeverSendsAndRequiresExplicitReplacement()
+PASS   : MailWindowTest::oauthNeedsExplicitAuthorizationAndNeverFallsBackToPassword()
+QWARN  : MailWindowTest::oauthDialogRequiresClientRegistrationAndPinsEndpoints() This plugin does not support propagateSizeHints()
+PASS   : MailWindowTest::oauthDialogRequiresClientRegistrationAndPinsEndpoints()
+QWARN  : MailWindowTest::templatesEnableOAuthWithRegistrationAndAccountSaveDoesNotConnect() This plugin does not support propagateSizeHints()
+PASS   : MailWindowTest::templatesEnableOAuthWithRegistrationAndAccountSaveDoesNotConnect()
+PASS   : MailWindowTest::cleanupTestCase()
+Totals: 20 passed, 0 failed, 1 skipped, 0 blacklisted, 4415ms
+********* Finished testing of MailWindowTest *********
+<end of output>
+Test time =   4.47 sec
+----------------------------------------------------------
+Test Passed.
+"test_mailwindow" end time: Nov 11 12:44 JST
+"test_mailwindow" time elapsed: 00:00:04
+----------------------------------------------------------
+
+20/34 Testing: test_networkdiagnosticsui
+20/34 Test: test_networkdiagnosticsui
+Command: "/tmp/telegram-app-build/test_networkdiagnosticsui"
+Directory: /tmp/telegram-app-build
+"test_networkdiagnosticsui" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of NetworkDiagnosticsUiTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : NetworkDiagnosticsUiTest::initTestCase()
+QWARN  : NetworkDiagnosticsUiTest::localStatusRefreshAndDemoCannotDial() Could not create AF_NETLINK socket (Operation not permitted)
+QWARN  : NetworkDiagnosticsUiTest::localStatusRefreshAndDemoCannotDial() This plugin does not support propagateSizeHints()
+QWARN  : NetworkDiagnosticsUiTest::localStatusRefreshAndDemoCannotDial() Could not create AF_NETLINK socket (Operation not permitted)
+PASS   : NetworkDiagnosticsUiTest::localStatusRefreshAndDemoCannotDial()
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() Could not create AF_NETLINK socket (Operation not permitted)
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() This plugin does not support propagateSizeHints()
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() This plugin does not support propagateSizeHints()
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() Could not create AF_NETLINK socket (Operation not permitted)
+QWARN  : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback() This plugin does not support propagateSizeHints()
+PASS   : NetworkDiagnosticsUiTest::pendingTestCanCloseAndReopenWithoutStaleCallback()
+PASS   : NetworkDiagnosticsUiTest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 166ms
+********* Finished testing of NetworkDiagnosticsUiTest *********
+<end of output>
+Test time =   0.19 sec
+----------------------------------------------------------
+Test Passed.
+"test_networkdiagnosticsui" end time: Nov 11 12:44 JST
+"test_networkdiagnosticsui" time elapsed: 00:00:00
+----------------------------------------------------------
+
+21/34 Testing: test_networkpolicy
+21/34 Test: test_networkpolicy
+Command: "/tmp/telegram-app-build/test_networkpolicy"
+Directory: /tmp/telegram-app-build
+"test_networkpolicy" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of NetworkPolicyTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : NetworkPolicyTest::initTestCase()
+QWARN  : NetworkPolicyTest::realInterfaceEnumerationWhenAvailable() Could not create AF_NETLINK socket (Operation not permitted)
+SKIP   : NetworkPolicyTest::realInterfaceEnumerationWhenAvailable() This environment cannot enumerate a real loopback interface; transport tests use explicit interface fixtures
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_networkpolicy.cpp(39)]
+PASS   : NetworkPolicyTest::addressBoundariesAndExactAllowlist()
+PASS   : NetworkPolicyTest::legacyQueueMigratesWithoutChangingScope()
+PASS   : NetworkPolicyTest::configurationFailsClosedAndFixedPort()
+PASS   : NetworkPolicyTest::outgoingAndIncomingRejectUnapprovedAddress()
+PASS   : NetworkPolicyTest::chatFilesSharesAndScreenUseSamePolicy()
+PASS   : NetworkPolicyTest::activeDownloadStopsOnInterfaceLoss(ordinary-file)
+PASS   : NetworkPolicyTest::activeDownloadStopsOnInterfaceLoss(shared-file)
+PASS   : NetworkPolicyTest::revokedPolicyBlocksDirectFileAndScreenPaths()
+PASS   : NetworkPolicyTest::diagnosticsReportTimeoutWithoutRetryOrIdentityClaim()
+PASS   : NetworkPolicyTest::queuedMessageAndFileNeverFallbackAcrossRestart()
+PASS   : NetworkPolicyTest::cleanupTestCase()
+Totals: 12 passed, 0 failed, 1 skipped, 0 blacklisted, 2429ms
+********* Finished testing of NetworkPolicyTest *********
+<end of output>
+Test time =   2.45 sec
+----------------------------------------------------------
+Test Passed.
+"test_networkpolicy" end time: Nov 11 12:44 JST
+"test_networkpolicy" time elapsed: 00:00:02
+----------------------------------------------------------
+
+22/34 Testing: test_notification_transport
+22/34 Test: test_notification_transport
+Command: "/tmp/telegram-app-build/test_notification_transport"
+Directory: /tmp/telegram-app-build
+"test_notification_transport" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of NotificationTransportTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : NotificationTransportTest::initTestCase()
+PASS   : NotificationTransportTest::duplicateGroupLongMessageNotifiesOnce()
+PASS   : NotificationTransportTest::longOfflineRestartProducesOneNotification()
+PASS   : NotificationTransportTest::disabledAlertsStillTrackConversationUnread()
+PASS   : NotificationTransportTest::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 280ms
+********* Finished testing of NotificationTransportTest *********
+<end of output>
+Test time =   0.30 sec
+----------------------------------------------------------
+Test Passed.
+"test_notification_transport" end time: Nov 11 12:44 JST
+"test_notification_transport" time elapsed: 00:00:00
+----------------------------------------------------------
+
+23/34 Testing: test_request_lifecycle
+23/34 Test: test_request_lifecycle
+Command: "/tmp/telegram-app-build/test_request_lifecycle"
+Directory: /tmp/telegram-app-build
+"test_request_lifecycle" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of RequestLifecycleTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : RequestLifecycleTest::initTestCase()
+PASS   : RequestLifecycleTest::callbackMayDestroyRequestOwner()
+PASS   : RequestLifecycleTest::cleanupTestCase()
+Totals: 3 passed, 0 failed, 0 skipped, 0 blacklisted, 76ms
+********* Finished testing of RequestLifecycleTest *********
+<end of output>
+Test time =   0.10 sec
+----------------------------------------------------------
+Test Passed.
+"test_request_lifecycle" end time: Nov 11 12:44 JST
+"test_request_lifecycle" time elapsed: 00:00:00
+----------------------------------------------------------
+
+24/34 Testing: test_screen
+24/34 Test: test_screen
+Command: "/tmp/telegram-app-build/test_screen"
+Directory: /tmp/telegram-app-build
+"test_screen" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of ScreenTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : ScreenTest::initTestCase()
+PASS   : ScreenTest::approvalAndFrames()
+PASS   : ScreenTest::groupIndependentRejection()
+PASS   : ScreenTest::rejection()
+PASS   : ScreenTest::cleanupTestCase()
+Totals: 5 passed, 0 failed, 0 skipped, 0 blacklisted, 374ms
+********* Finished testing of ScreenTest *********
+<end of output>
+Test time =   0.39 sec
+----------------------------------------------------------
+Test Passed.
+"test_screen" end time: Nov 11 12:44 JST
+"test_screen" time elapsed: 00:00:00
+----------------------------------------------------------
+
+25/34 Testing: test_sharing_box
+25/34 Test: test_sharing_box
+Command: "/tmp/telegram-app-build/test_sharing_box"
+Directory: /tmp/telegram-app-build
+"test_sharing_box" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of SharingBoxTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : SharingBoxTest::initTestCase()
+SKIP   : SharingBoxTest::noImplicitPublishAndFrozenRemoteContext() Original sharing box requires FULL
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_sharing_box.cpp(11)]
+PASS   : SharingBoxTest::cleanupTestCase()
+Totals: 2 passed, 0 failed, 1 skipped, 0 blacklisted, 1ms
+********* Finished testing of SharingBoxTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_sharing_box" end time: Nov 11 12:44 JST
+"test_sharing_box" time elapsed: 00:00:00
+----------------------------------------------------------
+
+26/34 Testing: test_telegram_contact_boxes
+26/34 Test: test_telegram_contact_boxes
+Command: "/tmp/telegram-app-build/test_telegram_contact_boxes"
+Directory: /tmp/telegram-app-build
+"test_telegram_contact_boxes" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of ContactBoxesTests *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : ContactBoxesTests::initTestCase()
+SKIP   : ContactBoxesTests::createGroupValidatesAndPreservesDraft() Requires original lib_ui FULL mode
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_contact_boxes.cpp(10)]
+SKIP   : ContactBoxesTests::profileUsesReturnedIdentityAndCloses() Requires original lib_ui FULL mode
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_contact_boxes.cpp(38)]
+SKIP   : ContactBoxesTests::cancellationAndOwnerDestructionNeverCommit() Requires original lib_ui FULL mode
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_contact_boxes.cpp(56)]
+PASS   : ContactBoxesTests::cleanupTestCase()
+Totals: 2 passed, 0 failed, 3 skipped, 0 blacklisted, 1ms
+********* Finished testing of ContactBoxesTests *********
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"test_telegram_contact_boxes" end time: Nov 11 12:44 JST
+"test_telegram_contact_boxes" time elapsed: 00:00:00
+----------------------------------------------------------
+
+27/34 Testing: test_telegram_emoji
+27/34 Test: test_telegram_emoji
+Command: "/tmp/telegram-app-build/test_telegram_emoji"
+Directory: /tmp/telegram-app-build
+"test_telegram_emoji" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of EmojiSourceTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : EmojiSourceTest::initTestCase()
+PASS   : EmojiSourceTest::officialDictionary()
+PASS   : EmojiSourceTest::searchSelectAndRestore()
+PASS   : EmojiSourceTest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 38ms
+********* Finished testing of EmojiSourceTest *********
+<end of output>
+Test time =   0.06 sec
+----------------------------------------------------------
+Test Passed.
+"test_telegram_emoji" end time: Nov 11 12:44 JST
+"test_telegram_emoji" time elapsed: 00:00:00
+----------------------------------------------------------
+
+28/34 Testing: test_telegram_input_lifecycle
+28/34 Test: test_telegram_input_lifecycle
+Command: "/tmp/telegram-app-build/test_telegram_input_lifecycle"
+Directory: /tmp/telegram-app-build
+"test_telegram_input_lifecycle" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of InputLifecycleTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : InputLifecycleTest::initTestCase()
+SKIP   : InputLifecycleTest::replacingConversationDraftCancelsPreedit() Original InputField lifecycle test applies to FULL mode.
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_input_lifecycle.cpp(22)]
+SKIP   : InputLifecycleTest::clearCancelsPreedit() Original InputField lifecycle test applies to FULL mode.
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_input_lifecycle.cpp(37)]
+SKIP   : InputLifecycleTest::focusOutCancelsPreeditAndNextCommitWorks() Original InputField lifecycle test applies to FULL mode.
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_input_lifecycle.cpp(61)]
+PASS   : InputLifecycleTest::cleanupTestCase()
+Totals: 2 passed, 0 failed, 3 skipped, 0 blacklisted, 1ms
+********* Finished testing of InputLifecycleTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_telegram_input_lifecycle" end time: Nov 11 12:44 JST
+"test_telegram_input_lifecycle" time elapsed: 00:00:00
+----------------------------------------------------------
+
+29/34 Testing: test_telegram_message_text
+29/34 Test: test_telegram_message_text
+Command: "/tmp/telegram-app-build/test_telegram_message_text"
+Directory: /tmp/telegram-app-build
+"test_telegram_message_text" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of TelegramMessageTextTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : TelegramMessageTextTest::initTestCase()
+SKIP   : TelegramMessageTextTest::originalEngineAndLongText() Original lib_ui text renderer requires FULL build
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_message_text.cpp(38)]
+SKIP   : TelegramMessageTextTest::longTextActuallyPaintsNearBottom() Original lib_ui text renderer requires FULL build
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_message_text.cpp(52)]
+SKIP   : TelegramMessageTextTest::originalSelectionCopy() Original lib_ui text renderer requires FULL build
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_message_text.cpp(64)]
+SKIP   : TelegramMessageTextTest::collapsePreservesFullSourceAndState() Original lib_ui text renderer requires FULL build
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_message_text.cpp(90)]
+SKIP   : TelegramMessageTextTest::responsiveWidthPreservesContent() Original lib_ui text renderer requires FULL build
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_message_text.cpp(105)]
+SKIP   : TelegramMessageTextTest::fontAndLinksAreSafe() Original lib_ui text renderer requires FULL build
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_message_text.cpp(116)]
+PASS   : TelegramMessageTextTest::cleanupTestCase()
+Totals: 2 passed, 0 failed, 6 skipped, 0 blacklisted, 1ms
+********* Finished testing of TelegramMessageTextTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_telegram_message_text" end time: Nov 11 12:44 JST
+"test_telegram_message_text" time elapsed: 00:00:00
+----------------------------------------------------------
+
+30/34 Testing: test_telegram_profile_box
+30/34 Test: test_telegram_profile_box
+Command: "/tmp/telegram-app-build/test_telegram_profile_box"
+Directory: /tmp/telegram-app-build
+"test_telegram_profile_box" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of ProfileBoxTests *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : ProfileBoxTests::initTestCase()
+SKIP   : ProfileBoxTests::originalBoxLifecycleAndSave() Original lib_ui modal host requires FULL mode
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_profile_box.cpp(10)]
+SKIP   : ProfileBoxTests::narrowWindowButtonsRemainReachable() Original lib_ui modal host requires FULL mode
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_profile_box.cpp(32)]
+SKIP   : ProfileBoxTests::settingsActionsAndParentDestruction() Original lib_ui modal host requires FULL mode
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_telegram_profile_box.cpp(79)]
+PASS   : ProfileBoxTests::cleanupTestCase()
+Totals: 2 passed, 0 failed, 3 skipped, 0 blacklisted, 1ms
+********* Finished testing of ProfileBoxTests *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_telegram_profile_box" end time: Nov 11 12:44 JST
+"test_telegram_profile_box" time elapsed: 00:00:00
+----------------------------------------------------------
+
+31/34 Testing: test_transfer_list
+31/34 Test: test_transfer_list
+Command: "/tmp/telegram-app-build/test_transfer_list"
+Directory: /tmp/telegram-app-build
+"test_transfer_list" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of TransferListTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : TransferListTest::initTestCase()
+SKIP   : TransferListTest::actionsAreSnapshotDrivenAndRemoteCompletionCannotOpen() Original transfer list requires FULL
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_transfer_list.cpp(13)]
+PASS   : TransferListTest::cleanupTestCase()
+Totals: 2 passed, 0 failed, 1 skipped, 0 blacklisted, 1ms
+********* Finished testing of TransferListTest *********
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_transfer_list" end time: Nov 11 12:44 JST
+"test_transfer_list" time elapsed: 00:00:00
+----------------------------------------------------------
+
+32/34 Testing: test_transfer_timeline
+32/34 Test: test_transfer_timeline
+Command: "/tmp/telegram-app-build/test_transfer_timeline"
+Directory: /tmp/telegram-app-build
+"test_transfer_timeline" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of TransferTimelineTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : TransferTimelineTest::initTestCase()
+SKIP   : TransferTimelineTest::originalTransferListRejectsRealOfferAndRefreshesReceipt() Original transfer overlay requires FULL Telegram UI
+   Loc: [/workspace/scratch/7124c45e7f36/telegram-lan-prototype/application/tests/test_transfer_timeline.cpp(32)]
+QWARN  : TransferTimelineTest::outgoingReceiptPresentationDoesNotGrantLocalOpen() This plugin does not support propagateSizeHints()
+QWARN  : TransferTimelineTest::outgoingReceiptPresentationDoesNotGrantLocalOpen() This plugin does not support propagateSizeHints()
+PASS   : TransferTimelineTest::outgoingReceiptPresentationDoesNotGrantLocalOpen()
+PASS   : TransferTimelineTest::localTransferMappingIsAtomicAndDistinct()
+PASS   : TransferTimelineTest::historyFailureWarnsOnceAndKeepsExistingCardLive()
+PASS   : TransferTimelineTest::fileGroupTrustRulesAndPersistenceFailure()
+PASS   : TransferTimelineTest::chatCannotRenameGroupOrCommitGroupWithoutMessage()
+PASS   : TransferTimelineTest::groupNotificationMayDestroyReceiverAfterPersistence()
+PASS   : TransferTimelineTest::peerNotificationMayDestroyReceiverAfterReply()
+PASS   : TransferTimelineTest::localGroupNameUsesWireRules()
+QWARN  : TransferTimelineTest::threeNodeFirstFileRoutesToGroup() This plugin does not support raise()
+QWARN  : TransferTimelineTest::threeNodeFirstFileRoutesToGroup() This plugin does not support raise()
+QWARN  : TransferTimelineTest::threeNodeFirstFileRoutesToGroup() This plugin does not support raise()
+PASS   : TransferTimelineTest::threeNodeFirstFileRoutesToGroup()
+QWARN  : TransferTimelineTest::realTransferUpdatesCardsAndPersists() This plugin does not support raise()
+QWARN  : TransferTimelineTest::realTransferUpdatesCardsAndPersists() This plugin does not support raise()
+QWARN  : TransferTimelineTest::realTransferUpdatesCardsAndPersists() This plugin does not support propagateSizeHints()
+QWARN  : TransferTimelineTest::realTransferUpdatesCardsAndPersists() This plugin does not support raise()
+QWARN  : TransferTimelineTest::realTransferUpdatesCardsAndPersists() This plugin does not support raise()
+PASS   : TransferTimelineTest::realTransferUpdatesCardsAndPersists()
+PASS   : TransferTimelineTest::cleanupTestCase()
+Totals: 12 passed, 0 failed, 1 skipped, 0 blacklisted, 2168ms
+********* Finished testing of TransferTimelineTest *********
+<end of output>
+Test time =   2.19 sec
+----------------------------------------------------------
+Test Passed.
+"test_transfer_timeline" end time: Nov 11 12:44 JST
+"test_transfer_timeline" time elapsed: 00:00:02
+----------------------------------------------------------
+
+33/34 Testing: test_transfercard
+33/34 Test: test_transfercard
+Command: "/tmp/telegram-app-build/test_transfercard"
+Directory: /tmp/telegram-app-build
+"test_transfercard" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of TransferCardTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : TransferCardTest::initTestCase()
+PASS   : TransferCardTest::actionsReflectRealState()
+PASS   : TransferCardTest::openRequiresVerifiedStateAndExistingFile()
+PASS   : TransferCardTest::cleanupTestCase()
+Totals: 4 passed, 0 failed, 0 skipped, 0 blacklisted, 1ms
+********* Finished testing of TransferCardTest *********
+<end of output>
+Test time =   0.03 sec
+----------------------------------------------------------
+Test Passed.
+"test_transfercard" end time: Nov 11 12:44 JST
+"test_transfercard" time elapsed: 00:00:00
+----------------------------------------------------------
+
+34/34 Testing: test_ui
+34/34 Test: test_ui
+Command: "/tmp/telegram-app-build/test_ui"
+Directory: /tmp/telegram-app-build
+"test_ui" start time: Nov 11 12:44 JST
+Output:
+----------------------------------------------------------
+********* Start testing of UiTest *********
+Config: Using QtTest library 6.11.2, Qt 6.11.2 (x86_64-little_endian-lp64 shared (dynamic) release build; by GCC 11.5.0 20240719 (Red Hat 11.5.0-5)), debian 13
+PASS   : UiTest::initTestCase()
+QWARN  : UiTest::historyPagingRetainsVisibleAnchor() This plugin does not support raise()
+PASS   : UiTest::historyPagingRetainsVisibleAnchor()
+PASS   : UiTest::backdatedArrivalDoesNotAutoLoadWholeArchive()
+PASS   : UiTest::telegramColumnRules()
+PASS   : UiTest::telegramRowPainterIsActuallyConnected()
+QWARN  : UiTest::telegramInputIsActuallyConnected() This plugin does not support raise()
+PASS   : UiTest::telegramInputIsActuallyConnected()
+QWARN  : UiTest::actualLongSendAndDraftOnRejection() This plugin does not support propagateSizeHints()
+PASS   : UiTest::actualLongSendAndDraftOnRejection()
+PASS   : UiTest::capturedImageKeepsRecipient()
+PASS   : UiTest::actualDeliveryBadgeFollowsAck()
+PASS   : UiTest::sharingResultsKeepOriginalContext()
+QWARN  : UiTest::selectedChatToMailIsOnlyADraft() This plugin does not support propagateSizeHints()
+QWARN  : UiTest::selectedChatToMailIsOnlyADraft() This plugin does not support raise()
+PASS   : UiTest::selectedChatToMailIsOnlyADraft()
+QWARN  : UiTest::separateMailWindowEntry() This plugin does not support raise()
+QWARN  : UiTest::separateMailWindowEntry() This plugin does not support raise()
+QWARN  : UiTest::separateMailWindowEntry() This plugin does not support raise()
+QWARN  : UiTest::separateMailWindowEntry() This plugin does not support propagateSizeHints()
+QWARN  : UiTest::separateMailWindowEntry() This plugin does not support propagateSizeHints()
+PASS   : UiTest::separateMailWindowEntry()
+PASS   : UiTest::layoutAndDrafts()
+QWARN  : UiTest::composeAndUnread() This plugin does not support raise()
+PASS   : UiTest::composeAndUnread()
+QWARN  : UiTest::notificationIntegration() This plugin does not support raise()
+PASS   : UiTest::notificationIntegration()
+QWARN  : UiTest::imageScrollAndLongText() This plugin does not support raise()
+QWARN  : UiTest::imageScrollAndLongText() This plugin does not support propagateSizeHints()
+PASS   : UiTest::imageScrollAndLongText()
+PASS   : UiTest::rosterCards()
+QWARN  : UiTest::composeLimitFeedback() This plugin does not support propagateSizeHints()
+PASS   : UiTest::composeLimitFeedback()
+QWARN  : UiTest::screenshots() This plugin does not support raise()
+QWARN  : UiTest::screenshots() This plugin does not support raise()
+PASS   : UiTest::screenshots()
+PASS   : UiTest::cleanupTestCase()
+Totals: 20 passed, 0 failed, 0 skipped, 0 blacklisted, 14042ms
+********* Finished testing of UiTest *********
+<end of output>
+Test time =  14.07 sec
+----------------------------------------------------------
+Test Passed.
+"test_ui" end time: Nov 11 12:44 JST
+"test_ui" time elapsed: 00:00:14
+----------------------------------------------------------
+
+End testing: Nov 11 12:44 JST

@@ -1,0 +1,73 @@
+Test project /tmp/telegram-app-build
+      Start  1: core_tests
+ 1/34 Test  #1: core_tests .......................   Passed   17.51 sec
+      Start  2: test_chatfeatures
+ 2/34 Test  #2: test_chatfeatures ................   Passed    0.09 sec
+      Start  3: test_chatmailexport
+ 3/34 Test  #3: test_chatmailexport ..............   Passed    0.03 sec
+      Start  4: test_contactmailbook
+ 4/34 Test  #4: test_contactmailbook .............   Passed    0.02 sec
+      Start  5: test_delivery_presentation
+ 5/34 Test  #5: test_delivery_presentation .......   Passed    0.02 sec
+      Start  6: test_delivery_receipts
+ 6/34 Test  #6: test_delivery_receipts ...........   Passed    5.12 sec
+      Start  7: test_dialogs_inner
+ 7/34 Test  #7: test_dialogs_inner ...............   Passed    0.02 sec
+      Start  8: test_files
+ 8/34 Test  #8: test_files .......................   Passed    4.36 sec
+      Start  9: test_history_bubble
+ 9/34 Test  #9: test_history_bubble ..............   Passed    0.02 sec
+      Start 10: test_history_paging
+10/34 Test #10: test_history_paging ..............   Passed    0.05 sec
+      Start 11: test_history_presentation
+11/34 Test #11: test_history_presentation ........   Passed    0.08 sec
+      Start 12: test_lan_history_list
+12/34 Test #12: test_lan_history_list ............   Passed    0.02 sec
+      Start 13: test_links
+13/34 Test #13: test_links .......................   Passed    0.03 sec
+      Start 14: test_mailaccounts
+14/34 Test #14: test_mailaccounts ................   Passed    0.04 sec
+      Start 15: test_mailmime
+15/34 Test #15: test_mailmime ....................   Passed    0.05 sec
+      Start 16: test_mailoauth
+16/34 Test #16: test_mailoauth ...................   Passed    4.60 sec
+      Start 17: test_mailsyncstate
+17/34 Test #17: test_mailsyncstate ...............   Passed    0.02 sec
+      Start 18: test_mailtransport
+18/34 Test #18: test_mailtransport ...............   Passed    2.29 sec
+      Start 19: test_mailwindow
+19/34 Test #19: test_mailwindow ..................   Passed    4.47 sec
+      Start 20: test_networkdiagnosticsui
+20/34 Test #20: test_networkdiagnosticsui ........   Passed    0.19 sec
+      Start 21: test_networkpolicy
+21/34 Test #21: test_networkpolicy ...............   Passed    2.45 sec
+      Start 22: test_notification_transport
+22/34 Test #22: test_notification_transport ......   Passed    0.30 sec
+      Start 23: test_request_lifecycle
+23/34 Test #23: test_request_lifecycle ...........   Passed    0.10 sec
+      Start 24: test_screen
+24/34 Test #24: test_screen ......................   Passed    0.39 sec
+      Start 25: test_sharing_box
+25/34 Test #25: test_sharing_box .................   Passed    0.02 sec
+      Start 26: test_telegram_contact_boxes
+26/34 Test #26: test_telegram_contact_boxes ......   Passed    0.03 sec
+      Start 27: test_telegram_emoji
+27/34 Test #27: test_telegram_emoji ..............   Passed    0.06 sec
+      Start 28: test_telegram_input_lifecycle
+28/34 Test #28: test_telegram_input_lifecycle ....   Passed    0.02 sec
+      Start 29: test_telegram_message_text
+29/34 Test #29: test_telegram_message_text .......   Passed    0.02 sec
+      Start 30: test_telegram_profile_box
+30/34 Test #30: test_telegram_profile_box ........   Passed    0.02 sec
+      Start 31: test_transfer_list
+31/34 Test #31: test_transfer_list ...............   Passed    0.02 sec
+      Start 32: test_transfer_timeline
+32/34 Test #32: test_transfer_timeline ...........   Passed    2.19 sec
+      Start 33: test_transfercard
+33/34 Test #33: test_transfercard ................   Passed    0.03 sec
+      Start 34: test_ui
+34/34 Test #34: test_ui ..........................   Passed   14.07 sec
+
+100% tests passed out of 34
+
+Total Test time (real) =  58.74 sec

@@ -1,0 +1,36 @@
+{
+  "full": {
+    "groups": 34,
+    "seconds": 89.96,
+    "internal_skips": 1
+  },
+  "default": {
+    "groups": 34,
+    "seconds": 58.74,
+    "internal_skips": 24
+  },
+  "ui-1.25": {
+    "passed": 26,
+    "seconds": 18.347
+  },
+  "mail-ui-1.25": {
+    "passed": 21,
+    "seconds": 4.528
+  },
+  "ui-1.5": {
+    "passed": 26,
+    "seconds": 18.251
+  },
+  "mail-ui-1.5": {
+    "passed": 21,
+    "seconds": 4.947
+  },
+  "ui-2": {
+    "passed": 26,
+    "seconds": 19.855
+  },
+  "mail-ui-2": {
+    "passed": 21,
+    "seconds": 5.035
+  }
+}
