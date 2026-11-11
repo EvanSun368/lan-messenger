@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/icons">
+    <file alias="lanlink.png">lanlink.png</file>
+  </qresource>
+</RCC>

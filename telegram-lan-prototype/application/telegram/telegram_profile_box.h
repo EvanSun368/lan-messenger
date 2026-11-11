@@ -20,6 +20,9 @@ struct TelegramSettingsActions {
  Fn<void()> chooseFont;
  Fn<void(bool)> setNotifications;
  QString versionNotice;
+ bool autoUpdate=true;
+ Fn<void(bool)> setAutoUpdate;
+ Fn<void()> checkForUpdates;
 };
 
 class TelegramProfileOverlay final : public Ui::RpWidget {
@@ -42,6 +45,16 @@ public:
      auto check=box->addRow(object_ptr<Ui::Checkbox>(box,QString("新消息桌面提醒和提示音"),actions.notifications));
      check->setObjectName("telegramNotifications");
      check->checkedChanges() | rpl::on_next(std::move(actions.setNotifications),check->lifetime());
+    }
+    if(actions.setAutoUpdate) {
+     auto check=box->addRow(object_ptr<Ui::Checkbox>(box,QString("后台自动检查并下载更新"),actions.autoUpdate));
+     check->setObjectName("telegramAutoUpdate");
+     check->checkedChanges() | rpl::on_next(std::move(actions.setAutoUpdate),check->lifetime());
+    }
+    if(actions.checkForUpdates) {
+     auto button=box->addRow(object_ptr<Ui::SettingsButton>(box,rpl::single(QString("检查更新…"))));
+     button->setObjectName("telegramCheckForUpdates");
+     button->setClickedCallback(std::move(actions.checkForUpdates));
     }
     if(!actions.versionNotice.isEmpty())
      box->addRow(object_ptr<Ui::FlatLabel>(box,actions.versionNotice,st::boxLabel));

@@ -1,5 +1,18 @@
 # Integration status and historical validation
 
+## Current revision: 0.6.1 updates and app icon
+
+The default 0.6.x prototype now has a user-visible 检查更新 action, optional
+background auto-update, and an original LanLink window/tray/exe icon. Update
+checks talk to GitHub Releases of the private `EvanSun368/lan-messenger`
+repository and therefore need a token stored in Windows Credential Manager;
+Linux still fails closed for secrets. Only `telegram-mail-vpn` packages are
+selected, not 0.5.x cpp zips. Staged updates apply after quit or on the next
+launch and are not a force-restart. See [UPDATES.md](application/UPDATES.md).
+The caveats below still apply: this is a source integration lab, FULL UI is
+Linux-only, and Windows runtime/update application has not been accepted on a
+real Windows machine in this revision.
+
 ## Integrated stage: mail OAuth, polling/replies and managed VPN
 
 The independent mail module now has Gmail, Outlook.com/Hotmail and Microsoft 365

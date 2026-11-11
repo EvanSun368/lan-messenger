@@ -11,6 +11,7 @@
 #include <QPointer>
 #include <QSettings>
 #include <QUrl>
+#include "updateservice.h"
 namespace TelegramLan { class DialogsView; class TransferList; class SharingPane; }
 class MailWindow;
 class ContactMailBook;
@@ -51,6 +52,7 @@ class MainWindow : public QMainWindow {
     void closeEvent(QCloseEvent *) override;
     Node *m_node;
     ChatNotifications *m_notifications = nullptr;
+    UpdateService *m_updates = nullptr;
     bool m_unreadRefreshPending = false;
     FileTransfer *m_files = nullptr;
     ScreenService *m_screen = nullptr;
@@ -166,6 +168,11 @@ class MainWindow : public QMainWindow {
     void sendImage(QByteArray jpeg);
     void sendImageTo(const QString &recipient,QByteArray jpeg);
     void editSettings();
+    void checkForUpdates();
+    void backgroundUpdateCheck();
+    void startUpdateChecks();
+    void connectUpdateService();
+    void scheduleApplyOnQuit();
     void viewProfile();
     void addPeer();
     void showNetworkDiagnostics();

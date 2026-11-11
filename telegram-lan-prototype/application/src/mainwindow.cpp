@@ -28,6 +28,9 @@
 #include "linkpreview.h"
 #include "node.h"
 #include "screenservice.h"
+#include "updateapply.h"
+#include "updateicon.h"
+#include <QDesktopServices>
 #include <QtNetwork>
 #include <QtWidgets>
 
@@ -294,11 +297,16 @@ MainWindow::MainWindow(QString storage, quint16 port, bool demo, QWidget *parent
                        qBound(8, m_settings.value("fontSize", 11).toInt(), 24));
     if (!QFontDatabase::families().contains(m_chatFont.family())) m_chatFont.setFamily(interfaceFontFamily());
     m_chatFont.setStyleStrategy(QFont::PreferAntialias);
+    setWindowIcon(lanlinkAppIcon());
     buildUi();
     buildFiles();
     buildSharing();
     setupServices();
-    m_notifications = new ChatNotifications(this, !m_demo);
+    m_notifications = new ChatNotifications(this, !m_demo, lanlinkAppIcon());
+    const auto running = parseAppVersion(QCoreApplication::applicationVersion()).value_or(AppVersion{0, 6, 1});
+    m_updates = new UpdateService(m_node->root(), running, platformUpdateCredentials(), this);
+    connectUpdateService();
+    startUpdateChecks();
     m_notifications->setEnabled(m_settings.value("notifications", true).toBool());
     connect(m_notifications, &ChatNotifications::unreadChanged, this, [this] {
         // Selection may mark a conversation read. Never delete/rebuild its
@@ -448,6 +456,7 @@ void MainWindow::buildUi() {
     auto *identityAction=menu->addAction(m_node->name()); identityAction->setEnabled(false);
     connect(menu,&QMenu::aboutToShow,this,[this,identityAction]{identityAction->setText(m_node->name());});
     menu->addAction("个人资料与设置…", this, &MainWindow::editSettings);
+    menu->addAction("检查更新…", this, &MainWindow::checkForUpdates);
     menu->addAction("网络连接诊断…", this, &MainWindow::showNetworkDiagnostics);
     menu->addSeparator();
     menu->addAction("联系人 / 局域网设备",this,[this]{m_tabs->setCurrentIndex(1);});
@@ -1559,6 +1568,9 @@ void MainWindow::editSettings() {
     actions.notifications=m_settings.value("notifications",true).toBool();
     actions.chooseFont=[this]{chooseFont();};
     actions.setNotifications=[this](bool on){m_settings.setValue("notifications",on);if(m_notifications)m_notifications->setEnabled(on);};
+    actions.autoUpdate=m_settings.value("autoUpdate",true).toBool();
+    actions.setAutoUpdate=[this](bool on){m_settings.setValue("autoUpdate",on);};
+    actions.checkForUpdates=[this]{checkForUpdates();};
     actions.versionNotice=QString("LanLink %1 · C++ / Qt 6\n开发预览，未加密、无设备身份认证。仅在可信局域网或明确配置的受管 VPN 测试，不要将端口映射到公网。\n离线待发保存在发送端，双方再次同时在线后送达。").arg(QCoreApplication::applicationVersion());
     watchModalOverlay(telegramShowProfileBox(centralWidget(),m_node->publicProfile(),[this](QJsonObject profile){
         if(!m_node->updateProfile(profile))return false;
@@ -1580,6 +1592,56 @@ void MainWindow::editSettings() {
     notifications->setChecked(m_settings.value("notifications",true).toBool());
     connect(notifications, &QCheckBox::toggled, this, [this](bool on) {m_settings.setValue("notifications",on);if(m_notifications)m_notifications->setEnabled(on);});
     sl->addWidget(notifications);
+    auto *autoUpdate = new QCheckBox("后台自动检查并下载更新");
+    autoUpdate->setObjectName("autoUpdate");
+    autoUpdate->setChecked(m_settings.value("autoUpdate",true).toBool());
+    connect(autoUpdate, &QCheckBox::toggled, this, [this](bool on) {m_settings.setValue("autoUpdate",on);});
+    sl->addWidget(autoUpdate);
+    auto *checkUpdates = new QPushButton("检查更新…");
+    checkUpdates->setObjectName("checkForUpdates");
+    connect(checkUpdates, &QPushButton::clicked, this, &MainWindow::checkForUpdates);
+    sl->addWidget(checkUpdates);
+    if(m_updates && m_updates->tokenAvailable()) {
+        auto *token = new QLineEdit;
+        token->setEchoMode(QLineEdit::Password);
+        token->setPlaceholderText(m_updates->hasToken() ? "已保存访问令牌，输入新令牌可替换" : "GitHub 访问令牌（私有仓库需要）");
+        token->setClearButtonEnabled(true);
+        auto *saveToken = new QPushButton(m_updates->hasToken() ? "更新令牌" : "保存令牌");
+        auto *clearToken = new QPushButton("清除令牌");
+        clearToken->setEnabled(m_updates->hasToken());
+        connect(saveToken, &QPushButton::clicked, this, [this,token,saveToken,clearToken]{
+            QString error;
+            auto bytes = token->text().toUtf8();
+            const bool saved = m_updates->saveToken(bytes, &error);
+            bytes.fill('\0');
+            token->clear();
+            if(!saved) { showError(error); return; }
+            saveToken->setText("更新令牌");
+            clearToken->setEnabled(true);
+            token->setPlaceholderText("已保存访问令牌，输入新令牌可替换");
+            statusBar()->showMessage("已保存 GitHub 访问令牌", 5000);
+        });
+        connect(clearToken, &QPushButton::clicked, this, [this,token,saveToken,clearToken]{
+            QString error;
+            if(!m_updates->clearToken(&error)) { showError(error); return; }
+            token->clear();
+            saveToken->setText("保存令牌");
+            clearToken->setEnabled(false);
+            token->setPlaceholderText("GitHub 访问令牌（私有仓库需要）");
+            statusBar()->showMessage("已清除 GitHub 访问令牌", 5000);
+        });
+        sl->addWidget(token);
+        auto *tokenRow = new QHBoxLayout;
+        tokenRow->addWidget(saveToken);
+        tokenRow->addWidget(clearToken);
+        sl->addLayout(tokenRow);
+    } else {
+        auto *notice = plainLabel((m_updates ? m_updates->tokenProblem() : QString()) + "\n" + UpdateService::missingTokenMessage()
+                                  + "\n发布页面：" + githubReleasesPageUrl());
+        notice->setWordWrap(true);
+        notice->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        sl->addWidget(notice);
+    }
     sl->addWidget(plainLabel(QString("LanLink %1 · C++ / Qt 6 原生版\n开发预览，非 Python 便携版。").arg(QCoreApplication::applicationVersion())));
     auto *notice = plainLabel("开发预览，未加密、无设备身份认证。\n仅在可信局域网或明确配置的受管 VPN 测试，不要将端口映射到公网。"
                               "\n离线待发保存在发送端，双方再次同时在线后送达。");
@@ -2427,5 +2489,69 @@ void MainWindow::exportChatMail() {
 void MainWindow::closeEvent(QCloseEvent *event) {
     // Let the mail editor confirm losing an unsaved draft or an active submission.
     if(m_mailWindow && !m_mailWindow->shutdown()){event->ignore();return;}
+    scheduleApplyOnQuit();
     QMainWindow::closeEvent(event);
+}
+
+void MainWindow::connectUpdateService() {
+    if(!m_updates) return;
+    connect(m_updates, &UpdateService::statusMessage, this, [this](const QString &text){ statusBar()->showMessage(text, 15000); });
+    connect(m_updates, &UpdateService::upToDate, this, [this](bool interactive){
+        const auto message = QString("当前已是最新版本（%1）。").arg(QCoreApplication::applicationVersion());
+        if(interactive) QMessageBox::information(this, "检查更新", message);
+        else statusBar()->showMessage(message, 8000);
+    });
+    connect(m_updates, &UpdateService::checkFailed, this, [this](const QString &message, const QString &url, bool interactive){
+        if(!interactive) { statusBar()->showMessage(message, 15000); return; }
+        QMessageBox box(QMessageBox::Warning, "检查更新", message + "\n\n发布页面：\n" + url, QMessageBox::Ok, this);
+        auto *open = box.addButton("打开发布页面", QMessageBox::ActionRole);
+        box.exec();
+        if(box.clickedButton()==open) QDesktopServices::openUrl(QUrl(url));
+    });
+    connect(m_updates, &UpdateService::updateAvailable, this, [this](const SelectedUpdate &update, bool interactive){
+        if(!interactive) {
+            if(m_settings.value("autoUpdate",true).toBool()) m_updates->download(update, false);
+            return;
+        }
+        const auto text = QString("发现新版本 %1（当前 %2）。\n是否下载并在退出或下次启动时安装？")
+                              .arg(update.version.toString(), QCoreApplication::applicationVersion());
+        if(QMessageBox::question(this, "检查更新", text) == QMessageBox::Yes)
+            m_updates->download(update, true);
+    });
+    connect(m_updates, &UpdateService::stageReady, this, [this](const SelectedUpdate &update, bool interactive){
+        const auto message = QString("已准备好 %1，将在退出或下次启动时安装。").arg(update.version.toString());
+        if(interactive) QMessageBox::information(this, "检查更新", message);
+        else statusBar()->showMessage(message, 15000);
+    });
+    connect(m_updates, &UpdateService::downloadFailed, this, [this](const QString &message, bool interactive){
+        if(interactive) showError(message);
+        else statusBar()->showMessage(message, 15000);
+    });
+}
+
+void MainWindow::startUpdateChecks() {
+    if(m_demo || !m_updates) return;
+    QTimer::singleShot(UpdateService::startupDelayMs(), this, &MainWindow::backgroundUpdateCheck);
+    auto *timer = new QTimer(this);
+    timer->setInterval(UpdateService::intervalMs());
+    connect(timer, &QTimer::timeout, this, &MainWindow::backgroundUpdateCheck);
+    timer->start();
+}
+
+void MainWindow::backgroundUpdateCheck() {
+    if(!m_updates || !m_settings.value("autoUpdate",true).toBool() || !m_updates->hasToken()) return;
+    m_updates->check(false);
+}
+
+void MainWindow::checkForUpdates() {
+    if(!m_updates) return;
+    m_updates->check(true);
+}
+
+void MainWindow::scheduleApplyOnQuit() {
+    if(!m_updates || m_demo) return;
+    const auto manifest = m_updates->staging()->manifest();
+    if(manifest.state != UpdateStageState::Staged && manifest.state != UpdateStageState::Applied) return;
+    QString error;
+    startApplyAfterExit(QCoreApplication::applicationPid(), QCoreApplication::applicationFilePath(), m_node->root(), &error);
 }

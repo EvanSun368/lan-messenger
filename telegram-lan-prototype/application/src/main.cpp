@@ -1,4 +1,7 @@
 #include "mainwindow.h"
+#include "updateapply.h"
+#include "updatestaging.h"
+#include "updateicon.h"
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QDir>
@@ -7,11 +10,15 @@
 #include <QJsonArray>
 #include <QTextStream>
 #include <QTimer>
+#include <QIcon>
+#include <QProcess>
+#include <QFileInfo>
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
     QCoreApplication::setOrganizationName("LanLink");
     QCoreApplication::setApplicationName("LanLinkTelegramLab");
-    QCoreApplication::setApplicationVersion("0.6.0-source-lab");
+    QCoreApplication::setApplicationVersion(QStringLiteral(LANLINK_VERSION));
+    QApplication::setWindowIcon(lanlinkAppIcon());
     QCommandLineParser p;
     p.addHelpOption();
     p.addVersionOption();
@@ -25,11 +32,35 @@ int main(int argc, char **argv) {
     p.addOption({"vpn-address", "该接口的本机 IPv4 地址", "ipv4"});
     p.addOption({"vpn-peer", "明确允许的对端私网/100.64.0.0/10 IPv4，可重复指定", "ipv4"});
     p.addOption({"list-network-interfaces", "列出本机接口和 IPv4 后退出，不连接对端"});
+    p.addOption({"apply-update-and-exit", "安装已下载并校验的更新后退出，不打开主窗口"});
     p.process(app);
     if (p.isSet("list-network-interfaces")) {
         QTextStream(stdout) << QJsonDocument(NetworkPolicy::interfaces()).toJson(QJsonDocument::Indented);
         return 0;
     }
+    auto defaultStorage = [](const QString &value) {
+        return value.isEmpty() ? QDir::homePath() + "/.lanlink-telegram-lab" : value;
+    };
+    const auto running = parseAppVersion(QCoreApplication::applicationVersion()).value_or(AppVersion{0, 6, 1});
+    const bool applyOnly = p.isSet("apply-update-and-exit");
+    if (applyOnly || (!p.isSet("demo") && !p.isSet("screenshot"))) {
+        UpdateStaging staging(updateStagingRoot(defaultStorage(p.value("storage"))));
+        QString applyError;
+        if (!staging.applyPending(QCoreApplication::applicationDirPath(), running, &applyError)) {
+            if (applyOnly) {
+                QTextStream(stderr) << applyError << Qt::endl;
+                return 1;
+            }
+        } else if (applyOnly) {
+            return 0;
+        } else if (staging.needsRelaunch(running)) {
+            auto args = QCoreApplication::arguments();
+            if (!args.isEmpty()) args.removeFirst();
+            QProcess::startDetached(QCoreApplication::applicationFilePath(), args);
+            return 0;
+        }
+    }
+    if (applyOnly) return 0;
     NetworkPolicy network;
     network.vpnOnly = p.isSet("vpn");
     if (!network.vpnOnly && (p.isSet("vpn-interface") || p.isSet("vpn-address") || p.isSet("vpn-peer"))) {

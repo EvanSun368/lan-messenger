@@ -3,12 +3,13 @@
 #include <QHash>
 #include <QPointer>
 #include <QString>
+#include <QIcon>
 class QWidget;
 class QSystemTrayIcon;
 class ChatNotifications : public QObject {
     Q_OBJECT
 public:
-    explicit ChatNotifications(QWidget *window, bool desktopEnabled = true);
+    explicit ChatNotifications(QWidget *window, bool desktopEnabled = true, const QIcon &icon = {});
     void incoming(const QString &conversation, const QString &name, bool activelyReading);
     void markRead(const QString &conversation);
     int unread(const QString &conversation) const { return m_unread.value(conversation); }
