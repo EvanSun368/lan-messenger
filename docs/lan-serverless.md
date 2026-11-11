@@ -51,11 +51,12 @@ to Telegram cloud even if a target misses the define.
 - Encryption of the LAN transport (v1 is plaintext on the local network).
 - NAT traversal or communication across routers; this is same-LAN only.
 - A packaged **Linux** desktop binary can be built against system Qt 6.8
-  (see [building-linux-packaged.md](building-linux-packaged.md)). A Windows
-  package was not produced in this pass; `lan::Node` is still POSIX-only.
-- `lan::Node` still uses POSIX sockets (`sys/socket.h`, `poll`, `fcntl`).
-  A Windows desktop build will need a Winsock port of `node.cpp` before it
-  can link.
+  (see [building-linux-packaged.md](building-linux-packaged.md)). `lan::Node`
+  now has a Winsock port (`socket_compat.h`) and can be MinGW-cross-compiled
+  as `lan_node.exe` / `lan_tests.exe` (see
+  [building-windows-mingw.md](building-windows-mingw.md)). A full Windows
+  tdesktop GUI package is not available from this Linux box yet: official
+  Windows builds are MSVC + midl + a large Libraries tree, not MinGW.
 - Multicast discovery is unreliable when the node is bound only to
   `127.0.0.1`. Binding `0.0.0.0` works on a real LAN; the loopback smoke
   test uses a unicast `target`.

@@ -6,14 +6,65 @@
 #include <cstring>
 #include <filesystem>
 #include <iostream>
-#include <poll.h>
 #include <string>
-#include <unistd.h>
 #include <vector>
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#include <poll.h>
+#include <unistd.h>
+#endif
 
 using namespace std::chrono_literals;
 
 namespace {
+
+// True if stdin has bytes (or is closed). Used instead of a blocking read
+// so the node can keep stepping. Windows cannot poll a console/pipe with
+// WSAPoll, which only accepts sockets.
+bool stdin_ready() {
+#ifdef _WIN32
+	const HANDLE handle = ::GetStdHandle(STD_INPUT_HANDLE);
+	if (handle == INVALID_HANDLE_VALUE || handle == nullptr) {
+		return false;
+	}
+	const DWORD type = ::GetFileType(handle);
+	if (type == FILE_TYPE_PIPE) {
+		DWORD available = 0;
+		if (!::PeekNamedPipe(handle, nullptr, 0, nullptr, &available, nullptr)) {
+			return true; // closed or broken: let the reader see EOF
+		}
+		return available > 0;
+	}
+	return ::WaitForSingleObject(handle, 0) == WAIT_OBJECT_0;
+#else
+	pollfd in{STDIN_FILENO, POLLIN, 0};
+	return ::poll(&in, 1, 0) > 0 && (in.revents & POLLIN);
+#endif
+}
+
+#ifdef _WIN32
+int read_stdin(char *buffer, int size) {
+	const HANDLE handle = ::GetStdHandle(STD_INPUT_HANDLE);
+	DWORD n = 0;
+	if (!::ReadFile(handle, buffer, static_cast<DWORD>(size), &n, nullptr)) {
+		return -1;
+	}
+	return static_cast<int>(n);
+}
+#else
+int read_stdin(char *buffer, int size) {
+	const ssize_t n = ::read(STDIN_FILENO, buffer, static_cast<size_t>(size));
+	return static_cast<int>(n);
+}
+#endif
 
 void usage() {
 	std::cerr << "Usage: lan_node --name <display-name> --dir <data-dir> "
@@ -201,11 +252,9 @@ int main(int argc, char **argv) {
 			std::cout << "ack " << ack << std::endl;
 		}
 
-		pollfd in{STDIN_FILENO, POLLIN, 0};
-		const int ready = ::poll(&in, 1, 0);
-		if (ready > 0 && (in.revents & POLLIN)) {
+		if (stdin_ready()) {
 			char buffer[1024];
-			const ssize_t n = ::read(STDIN_FILENO, buffer, sizeof(buffer));
+			const int n = read_stdin(buffer, sizeof(buffer));
 			if (n <= 0) {
 				running = false;
 				break;

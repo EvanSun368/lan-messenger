@@ -1,11 +1,5 @@
 #include "node.h"
-
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netinet/in.h>
-#include <poll.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include "socket_compat.h"
 
 #include <algorithm>
 #include <chrono>
@@ -18,24 +12,6 @@ namespace lan {
 namespace {
 
 using Clock = std::chrono::steady_clock;
-
-void throw_errno(const char *what) {
-	throw std::runtime_error(std::string(what) + ": " + std::strerror(errno));
-}
-
-void close_fd(int &fd) {
-	if (fd >= 0) {
-		::close(fd);
-		fd = -1;
-	}
-}
-
-void set_nonblock(int fd) {
-	const int flags = ::fcntl(fd, F_GETFL, 0);
-	if (flags < 0 || ::fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
-		throw_errno("fcntl O_NONBLOCK");
-	}
-}
 
 in_addr parse_ipv4(const std::string &ip) {
 	in_addr addr{};
@@ -59,59 +35,67 @@ std::string addr_ip(const sockaddr_in &addr) {
 	return text;
 }
 
-uint16_t bound_port(int fd) {
+uint16_t bound_port(Socket fd) {
 	sockaddr_in addr{};
 	socklen_t len = sizeof(addr);
 	if (::getsockname(fd, reinterpret_cast<sockaddr *>(&addr), &len) < 0) {
-		throw_errno("getsockname");
+		throw_socket_error("getsockname");
 	}
 	return ntohs(addr.sin_port);
 }
 
-int open_udp(const NodeConfig &config, uint16_t &bound) {
-	const int fd = ::socket(AF_INET, SOCK_DGRAM, 0);
-	if (fd < 0) {
-		throw_errno("socket udp");
+Socket open_udp(const NodeConfig &config, uint16_t &bound) {
+	const Socket fd = ::socket(AF_INET, SOCK_DGRAM, 0);
+	if (!valid_socket(fd)) {
+		throw_socket_error("socket udp");
 	}
 	int yes = 1;
-	::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+	set_sockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 #ifdef SO_REUSEPORT
-	::setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes));
+	set_sockopt(fd, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes));
 #endif
 	uint16_t port = config.udp_port;
 	if (!config.multicast_group.empty()) {
 		port = config.discovery_port;
 		if (port == 0) {
-			::close(fd);
+			Socket doomed = fd;
+			close_socket(doomed);
 			throw std::invalid_argument("multicast discovery requires a UDP port");
 		}
 	}
 	auto addr = make_addr(config.bind_address, port);
 	if (::bind(fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0) {
-		::close(fd);
-		throw_errno("bind udp");
+		Socket doomed = fd;
+		close_socket(doomed);
+		throw_socket_error("bind udp");
 	}
 	if (!config.multicast_group.empty()) {
+#ifdef _WIN32
+		DWORD loop = 1;
+		DWORD ttl = 1;
+#else
 		u_char loop = 1;
 		u_char ttl = 1;
-		::setsockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
-		::setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl));
+#endif
+		set_sockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
+		set_sockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttl, sizeof(ttl));
 		if (config.bind_address != "0.0.0.0") {
 			const auto iface = parse_ipv4(config.bind_address);
-			::setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &iface, sizeof(iface));
+			set_sockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &iface, sizeof(iface));
 		}
 		ip_mreq membership{};
 		membership.imr_multiaddr = parse_ipv4(config.multicast_group);
 		membership.imr_interface = parse_ipv4(
 			config.bind_address == "0.0.0.0" ? "0.0.0.0" : config.bind_address);
-		if (::setsockopt(
+		if (set_sockopt(
 				fd,
 				IPPROTO_IP,
 				IP_ADD_MEMBERSHIP,
 				&membership,
 				sizeof(membership)) < 0) {
-			::close(fd);
-			throw_errno("IP_ADD_MEMBERSHIP");
+			Socket doomed = fd;
+			close_socket(doomed);
+			throw_socket_error("IP_ADD_MEMBERSHIP");
 		}
 	}
 	set_nonblock(fd);
@@ -119,21 +103,23 @@ int open_udp(const NodeConfig &config, uint16_t &bound) {
 	return fd;
 }
 
-int open_listen(const NodeConfig &config, uint16_t &bound) {
-	const int fd = ::socket(AF_INET, SOCK_STREAM, 0);
-	if (fd < 0) {
-		throw_errno("socket tcp");
+Socket open_listen(const NodeConfig &config, uint16_t &bound) {
+	const Socket fd = ::socket(AF_INET, SOCK_STREAM, 0);
+	if (!valid_socket(fd)) {
+		throw_socket_error("socket tcp");
 	}
 	int yes = 1;
-	::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+	set_sockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 	auto addr = make_addr(config.bind_address, config.tcp_port);
 	if (::bind(fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0) {
-		::close(fd);
-		throw_errno("bind tcp");
+		Socket doomed = fd;
+		close_socket(doomed);
+		throw_socket_error("bind tcp");
 	}
 	if (::listen(fd, 16) < 0) {
-		::close(fd);
-		throw_errno("listen");
+		Socket doomed = fd;
+		close_socket(doomed);
+		throw_socket_error("listen");
 	}
 	set_nonblock(fd);
 	bound = bound_port(fd);
@@ -144,7 +130,7 @@ int open_listen(const NodeConfig &config, uint16_t &bound) {
 
 struct Node::Impl {
 	struct Connection {
-		int fd = -1;
+		Socket fd = kInvalidSocket;
 		bool connecting = false;
 		bool hello_sent = false;
 		bool hello_received = false;
@@ -183,6 +169,7 @@ struct Node::Impl {
 		if (started_) {
 			return;
 		}
+		ensure_sockets();
 		udp_fd_ = open_udp(config_, udp_port_);
 		listen_fd_ = open_listen(config_, tcp_port_);
 		started_ = true;
@@ -191,11 +178,11 @@ struct Node::Impl {
 
 	void stop() {
 		for (auto &connection : connections_) {
-			close_fd(connection.fd);
+			close_socket(connection.fd);
 		}
 		connections_.clear();
-		close_fd(listen_fd_);
-		close_fd(udp_fd_);
+		close_socket(listen_fd_);
+		close_socket(udp_fd_);
 		started_ = false;
 	}
 
@@ -221,12 +208,12 @@ struct Node::Impl {
 			}
 			fds.push_back({connection.fd, events, 0});
 		}
-		const int ready = ::poll(fds.data(), fds.size(), static_cast<int>(timeout.count()));
+		const int ready = poll_sockets(fds.data(), static_cast<unsigned>(fds.size()), static_cast<int>(timeout.count()));
 		if (ready < 0) {
-			if (errno == EINTR) {
+			if (error_interrupted()) {
 				return;
 			}
-			throw_errno("poll");
+			throw_socket_error("poll");
 		}
 		if (ready == 0) {
 			return;
@@ -249,7 +236,7 @@ struct Node::Impl {
 			std::remove_if(
 				connections_.begin(),
 				connections_.end(),
-				[](const Connection &connection) { return connection.fd < 0; }),
+				[](const Connection &connection) { return !valid_socket(connection.fd); }),
 			connections_.end());
 	}
 
@@ -279,8 +266,8 @@ struct Node::Impl {
 	}
 
 	NodeConfig config_;
-	int udp_fd_ = -1;
-	int listen_fd_ = -1;
+	Socket udp_fd_ = kInvalidSocket;
+	Socket listen_fd_ = kInvalidSocket;
 	uint16_t udp_port_ = 0;
 	uint16_t tcp_port_ = 0;
 	bool started_ = false;
@@ -343,11 +330,10 @@ struct Node::Impl {
 		announce.tcp_port = tcp_port_;
 		const auto packet = encode_announce(announce);
 		auto send_to = [&](const sockaddr_in &addr) {
-			::sendto(
+			socket_sendto(
 				udp_fd_,
 				packet.data(),
 				packet.size(),
-				0,
 				reinterpret_cast<const sockaddr *>(&addr),
 				sizeof(addr));
 		};
@@ -392,18 +378,17 @@ struct Node::Impl {
 			uint8_t buffer[2048];
 			sockaddr_in from{};
 			socklen_t from_len = sizeof(from);
-			const ssize_t n = ::recvfrom(
+			const auto n = socket_recvfrom(
 				udp_fd_,
 				buffer,
 				sizeof(buffer),
-				0,
 				reinterpret_cast<sockaddr *>(&from),
 				&from_len);
 			if (n < 0) {
-				if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				if (error_would_block()) {
 					return;
 				}
-				throw_errno("recvfrom");
+				throw_socket_error("recvfrom");
 			}
 			const auto announce = decode_announce(buffer, static_cast<size_t>(n));
 			if (!announce) {
@@ -422,15 +407,15 @@ struct Node::Impl {
 		for (;;) {
 			sockaddr_in from{};
 			socklen_t from_len = sizeof(from);
-			const int fd = ::accept(
+			const Socket fd = ::accept(
 				listen_fd_,
 				reinterpret_cast<sockaddr *>(&from),
 				&from_len);
-			if (fd < 0) {
-				if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			if (!valid_socket(fd)) {
+				if (error_would_block()) {
 					return;
 				}
-				throw_errno("accept");
+				throw_socket_error("accept");
 			}
 			set_nonblock(fd);
 			Connection connection;
@@ -471,15 +456,16 @@ struct Node::Impl {
 		if (!must_send && config_.identity.peer_id > peer_id) {
 			return;
 		}
-		const int fd = ::socket(AF_INET, SOCK_STREAM, 0);
-		if (fd < 0) {
+		const Socket fd = ::socket(AF_INET, SOCK_STREAM, 0);
+		if (!valid_socket(fd)) {
 			return;
 		}
 		set_nonblock(fd);
 		auto addr = make_addr(seen->second.info.ip, seen->second.info.tcp_port);
 		const int rc = ::connect(fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr));
-		if (rc < 0 && errno != EINPROGRESS && errno != EINTR) {
-			::close(fd);
+		if (rc < 0 && !error_connect_pending()) {
+			Socket doomed = fd;
+			close_socket(doomed);
 			return;
 		}
 		Connection connection;
@@ -500,15 +486,15 @@ struct Node::Impl {
 	void handle_connection(Connection &connection, short revents) {
 		if (revents & (POLLERR | POLLHUP | POLLNVAL)) {
 			if (connection.connecting) {
-				close_fd(connection.fd);
+				close_socket(connection.fd);
 				return;
 			}
 		}
 		if ((revents & POLLOUT) && connection.connecting) {
 			int err = 0;
 			socklen_t len = sizeof(err);
-			if (::getsockopt(connection.fd, SOL_SOCKET, SO_ERROR, &err, &len) < 0 || err != 0) {
-				close_fd(connection.fd);
+			if (get_sockopt(connection.fd, SOL_SOCKET, SO_ERROR, &err, &len) < 0 || err != 0) {
+				close_socket(connection.fd);
 				return;
 			}
 			connection.connecting = false;
@@ -520,14 +506,13 @@ struct Node::Impl {
 			}
 		}
 		if ((revents & POLLOUT) && !connection.connecting && !connection.write_buf.empty()) {
-			const ssize_t n = ::send(
+			const auto n = socket_send(
 				connection.fd,
 				connection.write_buf.data(),
-				connection.write_buf.size(),
-				0);
+				connection.write_buf.size());
 			if (n < 0) {
-				if (errno != EAGAIN && errno != EWOULDBLOCK) {
-					close_fd(connection.fd);
+				if (!error_would_block()) {
+					close_socket(connection.fd);
 				}
 				return;
 			}
@@ -537,12 +522,12 @@ struct Node::Impl {
 		}
 		if (revents & POLLIN) {
 			uint8_t buffer[4096];
-			const ssize_t n = ::recv(connection.fd, buffer, sizeof(buffer), 0);
+			const auto n = socket_recv(connection.fd, buffer, sizeof(buffer));
 			if (n <= 0) {
-				if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+				if (n < 0 && error_would_block()) {
 					return;
 				}
-				close_fd(connection.fd);
+				close_socket(connection.fd);
 				return;
 			}
 			connection.read_buf.insert(
@@ -560,7 +545,7 @@ struct Node::Impl {
 					connection.read_buf.begin(),
 					connection.read_buf.begin() + static_cast<std::ptrdiff_t>(decoded->consumed));
 				on_message(connection, decoded->message);
-				if (connection.fd < 0) {
+				if (!valid_socket(connection.fd)) {
 					return;
 				}
 			}
@@ -570,12 +555,12 @@ struct Node::Impl {
 	void on_message(Connection &connection, const Message &message) {
 		if (const auto *hello = std::get_if<Hello>(&message)) {
 			if (hello->peer_id == config_.identity.peer_id) {
-				close_fd(connection.fd);
+				close_socket(connection.fd);
 				return;
 			}
 			if (auto *existing = find_connection(hello->peer_id);
 				existing && existing != &connection) {
-				close_fd(connection.fd);
+				close_socket(connection.fd);
 				return;
 			}
 			connection.peer_id = hello->peer_id;
@@ -591,7 +576,7 @@ struct Node::Impl {
 			return;
 		}
 		if (!connection.hello_received) {
-			close_fd(connection.fd);
+			close_socket(connection.fd);
 			return;
 		}
 		if (const auto *text = std::get_if<Text>(&message)) {
@@ -610,7 +595,7 @@ struct Node::Impl {
 			return;
 		}
 		if (std::holds_alternative<Bye>(message)) {
-			close_fd(connection.fd);
+			close_socket(connection.fd);
 		}
 	}
 };
