@@ -1,80 +1,129 @@
-# LanLink
+# LanLink slim
 
-LanLink 是一个**面向局域网 / 内网的即时通讯工具**，从 [Telegram Desktop (tdesktop)](https://github.com/telegramdesktop/tdesktop) 派生，目标是尽量保留官方桌面客户端的界面与风格，但**不经过任何中心服务器**：同一局域网内的设备互相发现，直接通信。
+A slim, serverless LAN messenger with a Telegram Desktop-style Qt Widgets
+interface. Current source: **v0.14**. This is **LanLink**, not
+Telegram: it does not log into Telegram and does not talk to Telegram's
+servers.
 
-This is a **serverless LAN / intranet messenger** forked from [Telegram Desktop](https://github.com/telegramdesktop/tdesktop). Peers discover each other on the local network and talk directly. There is no Telegram cloud login and no self-hosted MTProto server in the intended design.
+Text is always sealed with the official `tde2e` envelope
+(`encrypt_message_for_one` / `decrypt_message_for_one`). File-transfer
+encryption is a setting and is **off by default** so a trusted LAN can move
+files faster (2 MiB plaintext chunks). When it is on, file payloads stay
+fail-closed under the same tde2e envelope and 32 KiB chunks. The wire marks
+plaintext offers with `LLP1` so the receiver knows to accept clear chunks;
+sealed offers are still decrypted. Encryption protects the payload, not
+membership of the local network.
 
-**本项目与 Telegram 官方无关，也不是官方客户端。**  
-**Not affiliated with Telegram. This is not the official Telegram Desktop client.**
+Chat bubbles, the emoji picker, and the bundled sticker pack all use
+official Desktop emoji sprites (quantized PNG atlases, because Linux Qt 6.8
+here has no webp plugin). Mixed text and CJK in bubbles go through the
+sprite tokenizer so missing glyphs do not become tofu. Animated tgs/rlottie
+stickers are not played. The picker closes after an emoji or sticker is
+inserted, same as official Telegram Desktop.
 
-当前仓库基于官方 tdesktop 的 `dev` 分支，提交 `2b502b26e1b85b502df70c4c048f44f02657af75`（上游 Version 7.4.2）。原有的独立 Qt 客户端代码已从 `main` 替换。
+## Features
 
-上游许可证仍是 GPLv3（含 OpenSSL 例外）。请保留 [LICENSE](LICENSE) 与 [LEGAL](LEGAL)。
+- Auto-discover LAN peers (UDP multicast `239.255.87.42:48710`, TTL 1)
+- Edit Profile covers photo, first name, last name, and bio. First/last/bio
+  are announced to LAN peers; the photo is stored and shown only on this
+  computer. Display name defaults to the machine hostname. No intro/start page
+- The chat header and the peer profile show the other side's IP
+- The interface language follows the OS locale (English, Simplified Chinese,
+  Traditional Chinese). Override with `--lang zh`, `zh-Hant`, or `en`, or
+  change it in Settings. Visible strings are translated, including
+  "Write a message...", "Message deleted", menus, and settings
+- Copying the data folder to another machine rotates `peer_id`
+- 1:1 and group text, files, photos, official-style emoji, and a static
+  sticker pack
+- Photo, File, and Folder send live under the paperclip attach button,
+  like official Telegram Desktop. Drag a file or folder onto the current
+  chat to send it the same way. Drops on an empty chat area are ignored
+- Right-click a bubble for a Telegram-style menu (Copy Text, Open,
+  Cancel, Delete for everyone) instead of a raw system menu
+- Incoming files land in `downloads/` under the portable working directory
+- Folder tree send/receive with sanitized relative paths
+- File transfers default to unencrypted 2 MiB chunks (window of 32),
+  resume after disconnect or crash, 16 GiB cap. Encrypted mode stays at
+  32 KiB sealed chunks. Cancel from the bubble; abort is final and does
+  not resume. SHA-256 verification covers both modes. Incoming GUI offers
+  wait for Receive / Decline before writing payloads
+- Recall (撤回) a sent text, sticker, or file for 48 hours; peers see
+  "Message deleted" / "消息已删除". The deleted pill is wide enough not
+  to clip that label
+- LAN groups: create, later add/remove members from the chat header,
+  1:N text, and group file/folder fan-out (fail-closed per recipient)
+- Night / day mode follows the main window, side menu, compose bar,
+  popups, and later-opened dialogs. Wallpaper is cached (including a
+  pre-dimmed night tile) so toggling does not rebuild the chat
+- Minimize / maximize / close use the native Windows title bar, with no
+  duplicate in-app caption controls
+- Windows portable exe embeds a LanLink .ico (not the official Telegram
+  logo)
 
-## 现在实际做到哪一步 / What works today
+## v0.14 highlights
 
-已经落地并可测试的包括无服务器传输层，以及把它接到官方界面会话层的第一刀，代码在 [`Telegram/SourceFiles/lan/`](Telegram/SourceFiles/lan/)：
+- Long-message layout is cached; scrolling paints only visible lines.
+- Offline history stays visible, with safe merging of stale contacts.
+- File-offer actions do not overlap; senders wait for receiver acceptance.
+- Stable peers no longer trigger repeated history writes or list rebuilds.
+- Active transfers use a bounded 4 ms scheduling interval, not a 0 ms busy loop;
+  file progress updates are throttled. Large transfers still consume bandwidth.
 
-- 本地身份：随机 `peer_id` + 本机保存的显示名，不需要手机号或 Telegram 账号
-- 局域网发现：默认 UDP 组播 `239.255.87.42:48710`（TTL 1）；组播被过滤时可用单播 `target`
-- 点对点 TCP 文本消息，带确认
-- 单元测试，以及同一台机器上两个 `lan_node` 进程互发文本的冒烟测试
-- **界面挂钩：** 启动页改为本地显示名（标题为 LanLink，不再走手机号 / 二维码登录）；发现到的对等端进入会话列表；文字收发走 `lan::Node`，不再登录 Telegram 云。CMake 选项 `LANLINK_SERVERLESS` 默认开启，官方 `api_id` / `api_hash` 不再是配置构建的前提。
+## Build
 
-**尚未完成的部分（请勿误解）：**
+Qt 6.8.3 and official `tde2e` are required. The CMake test target also
+uses Qt for UI-helper tests. Adjust the example dependency paths to your
+installation. See [third-party notices](third_party/README.md).
 
-- 本环境还没有产出完整的 tdesktop Linux/Windows 桌面二进制。按上游文档编译前请先初始化子模块；详见 [docs/lan-serverless.md](docs/lan-serverless.md)。
-- `lan::Node` 目前是 POSIX 套接字实现，Windows 桌面构建还需要先做 Winsock 移植。
-- 文件发送、语音/视频通话、群组、频道等还没有在局域网路径上实现。
-- 当前局域网传输是明文，只适合受信任的内网。
-- 绑定仅 `127.0.0.1` 时组播发现不可靠；回环冒烟测试使用单播 `target`。真实局域网请绑定 `0.0.0.0`。
-
-挂钩细节见 [docs/lan-serverless.md](docs/lan-serverless.md)。
-
-## 先试用局域网文本通道 / Try the LAN text path
-
-不需要初始化 tdesktop 的子模块。用一台装有 C++17 编译器的机器：
+Linux:
 
 ```bash
-cd Telegram/SourceFiles/lan
-c++ -std=c++17 -O2 -I. -Itests -o lan_tests \
-  tests/test_main.cpp tests/test_identity.cpp tests/test_protocol.cpp tests/test_node.cpp \
-  identity.cpp protocol.cpp node.cpp
-./lan_tests
-
-c++ -std=c++17 -O2 -I. -o lan_node lan_cli.cpp identity.cpp protocol.cpp node.cpp
+cmake -S . -B build-linux \
+  -DCMAKE_PREFIX_PATH=/workspace/qt/6.8.3/gcc_64 \
+  -DTDE2E_PREFIX=/workspace/deps \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build-linux -j
+./build-linux/lan_tests
+./build-linux/LanLink --dir /tmp/lanlink-alice --name Alice
 ```
 
-同一台机器上的两个进程（回环、单播发现）：
+Windows (cross-compile from this Linux box):
 
 ```bash
-./lan_node --name Alice --dir /tmp/lan-alice --bind 127.0.0.1 --no-multicast
-./lan_node --name Bob   --dir /tmp/lan-bob   --bind 127.0.0.1 --no-multicast
-# 在各自标准输入里执行：
-#   target 127.0.0.1:<对方输出的 udp 端口>
-#   send Alice hello
+cmake -S . -B build-win \
+  -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake \
+  -DCMAKE_PREFIX_PATH=/workspace/qt/6.8.3/mingw_64 \
+  -DQT_HOST_PATH=/workspace/qt/6.8.3/gcc_64 \
+  -DTDE2E_PREFIX=/workspace/mingw-deps \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build-win -j --target LanLink
 ```
 
-也可以运行 `./tests/smoke_two_processes.sh`。
+The portable working directory is the executable's folder when it is
+writable, otherwise the current directory. `--dir` overrides that.
+`--name` sets the display name. `--lang zh|zh-CN|zh-Hans|zh-TW|zh-Hant|en` selects
+the interface language (otherwise the OS locale, or Settings).
 
-在真实局域网中，不要加 `--no-multicast` 和 `--bind 127.0.0.1`，默认组播即可互相发现。若交换机或系统过滤了组播，再用 `--target`。
+## Layout
 
-## 如何编译完整的桌面客户端 / Building the desktop app
+- `lan/` — protocol library (copied from the trim-e2ee transport, plus
+  group file/folder fan-out). Independent of Qt.
+- `app/` — Qt Widgets UI
+- `resources/` — official Open Sans fonts, official compose/search icons,
+  official chat wallpaper (`bg_initial.jpg`), LanLink app icon
 
-完整桌面客户端仍按上游文档构建。此 fork 默认编译为局域网模式（`LANLINK_SERVERLESS=ON`），启动后不应再登录 Telegram 云：
+This main branch contains the slim client, not the earlier full-desktop
+fork. Earlier repository commits remain in Git history. Generated builds,
+portable distributions, screenshots, and local peer data are not source
+inputs and are not included. The bundled assets are ready to build;
+`tools/prepare_assets.py` is an optional maintainer generator whose local
+source paths must be adjusted before use.
 
-- [Windows](docs/building-win.md)
-- [macOS](docs/building-mac.md)
-- [GNU/Linux（官方推荐 Docker）](docs/building-linux.md)
+## Tests
 
-先初始化子模块（体积较大，需要时再拉取）：
+`lan_tests` covers identity, path sanitization, resume math, group
+membership, 1:1 file/folder transfer, group file/folder fan-out, markdown,
+long-text clipping, offline contact merging, and idle/transfer scheduling.
+Run headlessly with `QT_QPA_PLATFORM=offscreen ./build-linux/lan_tests`.
 
-```bash
-git submodule update --init --recursive
-```
-
-本仓库已关闭 GitHub Actions，避免占用或触发上游自带的大量 CI。
-
-## 第三方与版权
-
-界面与大量底层代码来自 Telegram Desktop 及其第三方依赖，许可证说明见上游 README 历史与各子模块。本仓库新增的局域网模块同样以 GPLv3（含 OpenSSL 例外）发布。
+The ub-mode tools (`crapper`, `dryer`, `mutator`) do not score C++.

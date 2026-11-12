@@ -1,0 +1,267 @@
+#!/usr/bin/env python3
+"""Copy official Telegram Desktop art into the slim LanLink tree.
+
+Brand stays LanLink: the product icon is not the official Telegram logo.
+Emoji sprites, compose icons, and category tabs come from the official tree.
+"""
+from __future__ import annotations
+
+import re
+import shutil
+import struct
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
+
+ROOT = Path("/workspace/lanlink-slim")
+OFFICIAL = Path("/workspace/tdesktop-official/Telegram/Resources")
+EMOJI_TXT = Path(
+    "/workspace/lan-messenger/telegram-lan-prototype/emoji-component/data/emoji.txt"
+)
+ICON_SRC = OFFICIAL / "icons"
+ART_SRC = OFFICIAL / "art"
+RES = ROOT / "resources"
+GEN = ROOT / "app" / "emoji_catalog_data.cpp"
+
+SKIN = {0x1F3FB, 0x1F3FC, 0x1F3FD, 0x1F3FE, 0x1F3FF}
+SHEET_COLS = 32
+SHEET_ROWS = 16
+CELL = 72
+
+SECTION_NAMES = [
+    "People",
+    "Nature",
+    "Food",
+    "Activity",
+    "Travel",
+    "Objects",
+    "Symbols",
+]
+
+# Curated sticker ids from the official sprite list (base emoji).
+STICKER_CHOICES = [
+    "😀", "😂", "😍", "🥰", "😎", "🤔", "😭", "😡", "🤯", "🥳",
+    "👍", "👎", "👏", "🙏", "❤️", "🔥", "🎉", "⭐", "✅", "❌",
+    "🐶", "🐱", "🐼", "🦊", "🐸", "🌸", "🌈", "☀️", "⚡", "🍀",
+    "🍕", "🍔", "☕", "🎂", "🍺", "⚽", "🎮", "🎵", "💡", "🚀",
+    "🏠", "✈️", "🎁", "💯", "👋", "🤝", "💪", "👻",
+]
+
+
+def parse_tokens(line: str) -> list[str]:
+    return re.findall(r'"([^"]*)"', line)
+
+
+def has_skin(text: str) -> bool:
+    return any(ord(ch) in SKIN for ch in text)
+
+
+def bases_for_line(tokens: list[str]) -> list[str]:
+    if len(tokens) >= 2 and all(has_skin(t) for t in tokens[1:]):
+        return [tokens[0]]
+    return [t for t in tokens if not has_skin(t)] or [tokens[0]]
+
+
+def load_catalog():
+    text = EMOJI_TXT.read_text(encoding="utf-8")
+    part0 = text.split("=========================================")[0]
+    sections = re.split(r"\n(?:[ \t]*\n){2,}", part0.strip())
+    all_tokens: list[str] = []
+    picker: list[tuple[int, str, int]] = []  # section, utf8, index
+    for sec_i, block in enumerate(sections):
+        # Merge hearts + flags into Symbols (official has 7 sections).
+        section = min(sec_i, 6)
+        for line in block.splitlines():
+            tokens = parse_tokens(line)
+            if not tokens:
+                continue
+            bases = set(bases_for_line(tokens))
+            for tok in tokens:
+                index = len(all_tokens)
+                all_tokens.append(tok)
+                if tok in bases:
+                    picker.append((section, tok, index))
+    return all_tokens, picker
+
+
+def copy_icon(src: Path, dest: Path):
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(src, dest)
+    print(f"copied {src.name} -> {dest}")
+
+
+def convert_emoji_sheets():
+    dest_dir = RES / "emoji"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    total = 0
+    for i in range(1, 9):
+        src = OFFICIAL / "emoji" / f"emoji_{i}.webp"
+        im = Image.open(src).convert("RGBA")
+        # 256-color palette keeps official art small enough for the slim build
+        # while staying recognizably Telegram. Linux Qt has no webp plugin.
+        quantized = im.quantize(colors=256, method=Image.Quantize.FASTOCTREE)
+        out = dest_dir / f"emoji_{i}.png"
+        quantized.save(out, "PNG", optimize=True)
+        total += out.stat().st_size
+        print(f"atlas {out.name} {out.stat().st_size}")
+    print(f"atlases total {total}")
+
+
+def sprite_box(index: int):
+    sheet = index // (SHEET_COLS * SHEET_ROWS)
+    rem = index % (SHEET_COLS * SHEET_ROWS)
+    row, col = divmod(rem, SHEET_COLS)
+    return sheet, col * CELL, row * CELL
+
+
+def build_stickers(all_tokens: list[str]):
+    dest = RES / "stickers" / "classic"
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+    index_of = {tok: i for i, tok in enumerate(all_tokens)}
+    sheets: dict[int, Image.Image] = {}
+    names = []
+    for n, emoji in enumerate(STICKER_CHOICES):
+        if emoji not in index_of:
+            print("missing sticker", emoji)
+            continue
+        sheet, x, y = sprite_box(index_of[emoji])
+        if sheet not in sheets:
+            src = OFFICIAL / "emoji" / f"emoji_{sheet + 1}.webp"
+            sheets[sheet] = Image.open(src).convert("RGBA")
+        cell = sheets[sheet].crop((x, y, x + CELL, y + CELL))
+        large = cell.resize((128, 128), Image.Resampling.LANCZOS)
+        name = f"{n:02d}"
+        path = dest / f"{name}.png"
+        large.save(path, "PNG", optimize=True)
+        names.append((name, emoji, index_of[emoji]))
+        print(f"sticker {name} {emoji} {path.stat().st_size}")
+    return names
+
+
+def write_catalog(all_tokens: list[str], picker: list[tuple[int, str, int]], stickers):
+    def esc(s: str) -> str:
+        return "".join(f"\\x{ord(ch):02x}" if ord(ch) < 32 else ch for ch in s).replace(
+            "\\", "\\\\"
+        ).replace('"', '\\"')
+
+    lines = [
+        "// Generated by tools/prepare_assets.py from official tdesktop emoji data.",
+        "// Do not edit by hand.",
+        '#include "emoji_catalog.h"',
+        "",
+        "namespace emoji {",
+        "const EmojiItem kEmoji[] = {",
+    ]
+    for section, text, index in picker:
+        raw = text.encode("utf-8")
+        hexes = "".join(f"\\x{b:02x}" for b in raw)
+        lines.append(f'\t{{{section}, {index}, "{hexes}"}},')
+    lines.append("};")
+    lines.append(f"const int kEmojiCount = {len(picker)};")
+    lines.append("const StickerItem kStickers[] = {")
+    for name, text, index in stickers:
+        raw = text.encode("utf-8")
+        hexes = "".join(f"\\x{b:02x}" for b in raw)
+        lines.append(f'\t{{"{name}", "{hexes}", {index}}},')
+    lines.append("};")
+    lines.append(f"const int kStickerCount = {len(stickers)};")
+    lines.append("} // namespace emoji")
+    lines.append("")
+    GEN.write_text("\n".join(lines), encoding="utf-8")
+    print("wrote", GEN, "picker", len(picker), "stickers", len(stickers), "sprites", len(all_tokens))
+
+
+def write_ico():
+    src = RES / "art" / "lanlink.png"
+    im = Image.open(src).convert("RGBA")
+    sizes = [16, 24, 32, 48, 64, 128, 256]
+    images = [im.resize((s, s), Image.Resampling.LANCZOS) for s in sizes]
+    ico = RES / "art" / "lanlink.ico"
+    images[0].save(ico, format="ICO", sizes=[(s, s) for s in sizes], append_images=images[1:])
+    # Pillow's ICO writer may ignore append_images; write a proper ICO manually if needed.
+    if ico.stat().st_size < 1000:
+        write_ico_manual(images, sizes, ico)
+    print("ico", ico, ico.stat().st_size)
+
+
+def write_ico_manual(images, sizes, dest: Path):
+    # ICONDIR + ICONDIRENTRY * n + image data (PNG-in-ICO works on Windows Vista+).
+    entries = []
+    blobs = []
+    offset = 6 + 16 * len(sizes)
+    for im, size in zip(images, sizes):
+        buf = __import__("io").BytesIO()
+        im.save(buf, format="PNG")
+        data = buf.getvalue()
+        entries.append((size, len(data), offset))
+        blobs.append(data)
+        offset += len(data)
+    out = bytearray()
+    out += struct.pack("<HHH", 0, 1, len(sizes))
+    for size, length, off in entries:
+        w = 0 if size == 256 else size
+        out += struct.pack("<BBBBHHII", w, w, 0, 0, 1, 32, length, off)
+    for blob in blobs:
+        out += blob
+    dest.write_bytes(out)
+
+
+def copy_official_icons():
+    mapping = {
+        ICON_SRC / "emoji" / "emoji_smile.png": RES / "icons" / "emoji_smile.png",
+        ICON_SRC / "emoji" / "emoji_smile@2x.png": RES / "icons" / "emoji_smile@2x.png",
+        ICON_SRC / "emoji" / "emoji_recent.png": RES / "icons" / "emoji_recent.png",
+        ICON_SRC / "emoji" / "emoji_nature.png": RES / "icons" / "emoji_nature.png",
+        ICON_SRC / "emoji" / "emoji_food.png": RES / "icons" / "emoji_food.png",
+        ICON_SRC / "emoji" / "emoji_activities.png": RES / "icons" / "emoji_activities.png",
+        ICON_SRC / "emoji" / "emoji_travel.png": RES / "icons" / "emoji_travel.png",
+        ICON_SRC / "emoji" / "emoji_objects.png": RES / "icons" / "emoji_objects.png",
+        ICON_SRC / "emoji" / "emoji_love.png": RES / "icons" / "emoji_symbols.png",
+        ICON_SRC / "emoji" / "stickers.png": RES / "icons" / "stickers.png",
+        ICON_SRC / "history_file_cancel.png": RES / "icons" / "file_cancel.png",
+        ICON_SRC / "history_file_cancel@2x.png": RES / "icons" / "file_cancel@2x.png",
+        ICON_SRC / "menu" / "delete.png": RES / "icons" / "menu_delete.png",
+        ICON_SRC / "menu" / "photo_set.png": RES / "icons" / "photo_set.png",
+        ICON_SRC / "profile_add_member.png": RES / "icons" / "profile_add_member.png",
+        ICON_SRC / "dialogs" / "dialogs_menu.png": RES / "icons" / "dialogs_menu.png",
+        ICON_SRC / "dialogs" / "dialogs_menu@2x.png": RES / "icons" / "dialogs_menu@2x.png",
+        ICON_SRC / "chat" / "input_attach.png": RES / "icons" / "input_attach.png",
+        ICON_SRC / "chat" / "input_attach@2x.png": RES / "icons" / "input_attach@2x.png",
+        ICON_SRC / "chat" / "input_send.png": RES / "icons" / "input_send.png",
+        ICON_SRC / "chat" / "input_send@2x.png": RES / "icons" / "input_send@2x.png",
+        ICON_SRC / "bubble_tail.png": RES / "icons" / "bubble_tail.png",
+        ICON_SRC / "bubble_tail@2x.png": RES / "icons" / "bubble_tail@2x.png",
+        ICON_SRC / "groups_create.png" if (ICON_SRC / "groups_create.png").exists() else ICON_SRC / "emoji" / "emoji_smile.png": RES / "icons" / "groups_create.png",
+    }
+    # groups_create may already exist; prefer official if present
+    official_group = None
+    for cand in ICON_SRC.rglob("groups_create.png"):
+        official_group = cand
+        break
+    if official_group:
+        mapping[official_group] = RES / "icons" / "groups_create.png"
+    else:
+        mapping.pop(ICON_SRC / "emoji" / "emoji_smile.png", None)
+
+    # Also try official search icon already present.
+    for src, dest in mapping.items():
+        if not src.exists():
+            print("missing official icon", src)
+            continue
+        copy_icon(src, dest)
+
+
+def main():
+    copy_official_icons()
+    convert_emoji_sheets()
+    all_tokens, picker = load_catalog()
+    stickers = build_stickers(all_tokens)
+    write_catalog(all_tokens, picker, stickers)
+    write_ico()
+    print("done")
+
+
+if __name__ == "__main__":
+    main()
